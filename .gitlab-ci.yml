@@ -1,0 +1,21 @@
+pljit:
+  script:
+    - mkdir ci_build_pljit
+    - cd ci_build_pljit
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - make
+    - ./test/tester
+  tags:
+    - cmake
+    - libgtest-dev
+
+lint_pljit:
+  script:
+    - mkdir ci_lint_pljit
+    - cd ci_lint_pljit
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - make lint
+  tags:
+    - cmake
+    - clang-tidy-7
+  allow_failure: true
