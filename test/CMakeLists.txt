@@ -1,5 +1,7 @@
 set(TEST_SOURCES
     # add your *.cpp files here
+    parser/TestParser.cpp
+    lexer/TestLexer.cpp
     Tester.cpp
     )
 
