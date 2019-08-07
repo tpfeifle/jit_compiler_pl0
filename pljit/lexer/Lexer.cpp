@@ -3,23 +3,19 @@
 #include <optional>
 #include <string_view>
 #include <iostream>
-
-/*void Lexer::scanCode() {
-    std::unique_ptr<Token> token = this->next();
-    while (token) {
-         token = this->next();
-    }
-}*/
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 std::unique_ptr<Token> Lexer::next() {
     while (currentLine < code.numberOfLines()) {
         int i = currentPos;
         int beginningOfToken = 0;
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
-                Token token = Token(SourceReference(0, 0, 1, code), Token::Category::OPERATOR, Token::Type::PLUS); // TODO: this feels stupid to use as a placeholder
+                Token token = Token(SourceReference(0, 0, 1, code), Token::Category::OPERATOR,
+                                    Token::Type::PLUS); // TODO: this feels stupid to use as a placeholder
 
-                if(determineCategory(token, i, 1) == -1) {
+                if (determineCategory(token, i, 1) == -1) {
                     //invalid character -->
                     token.source.printContext("Unexpected character");
                     return nullptr;
@@ -30,8 +26,8 @@ std::unique_ptr<Token> Lexer::next() {
                 // greedy add
                 while (code.getCharacter(currentLine, i)) {
                     if (isspace(code.getCharacter(currentLine, i)) ||
-                        determineCategory(token, beginningOfToken, i+1-beginningOfToken) == -1) {
-                        determineCategory(token, beginningOfToken, i-beginningOfToken);
+                        determineCategory(token, beginningOfToken, i + 1 - beginningOfToken) == -1) {
+                        determineCategory(token, beginningOfToken, i - beginningOfToken);
                         tokens.emplace_back(token);
                         currentPos = i;
                         return std::make_unique<Token>(tokens.back());
@@ -53,21 +49,20 @@ std::unique_ptr<Token> Lexer::next() {
  * return next token, but do not increment the currentLine or currentPos --> used for repeats to look ahead
  * @return
  */
+//---------------------------------------------------------------------------
 std::unique_ptr<Token> Lexer::nextLookahead() {
     unsigned backupCurrentLine = currentLine;
     unsigned backupCurrentPos = currentPos;
     std::unique_ptr<Token> token = this->next();
     currentLine = backupCurrentLine;
     currentPos = backupCurrentPos;
-    if(token) {
+    if (token) {
         tokens.pop_back();
     }
     return token;
 }
-
-
-
-int Lexer::determineCategory(Token &token, unsigned start, unsigned length) {
+//---------------------------------------------------------------------------
+int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     char firstChar = code.getCharacter(currentLine, start);
     SourceReference source = SourceReference(currentLine, start, length, code);
     if (firstChar == '+' && length == 1) {
@@ -82,9 +77,10 @@ int Lexer::determineCategory(Token &token, unsigned start, unsigned length) {
         token = Token(source, Token::Category::OPERATOR, Token::Type::DIVIDE);
     } else if (firstChar == '.' && length == 1) {
         token = Token(source, Token::Category::KEYWORD, Token::Type::FINAL);
-    } else if (firstChar == ':' && (length == 1 || (length == 2 && code.getCharacter(currentLine, start+length-1) == '='))) {
+    } else if (firstChar == ':' &&
+               (length == 1 || (length == 2 && code.getCharacter(currentLine, start + length - 1) == '='))) {
         token = Token(source, Token::Category::OPERATOR, Token::Type::ASSIGNMENT);
-    } else if (firstChar == ','&& length == 1) {
+    } else if (firstChar == ',' && length == 1) {
         token = Token(source, Token::Category::SEPARATOR, Token::Type::COLON);
     } else if (firstChar == ';' && length == 1) {
         token = Token(source, Token::Category::SEPARATOR, Token::Type::SEMICOLON);
@@ -108,9 +104,10 @@ int Lexer::determineCategory(Token &token, unsigned start, unsigned length) {
             }
         }
 
-        std::string tokenAsString = std::string(code.getLine(currentLine)).substr(start, length); // TODO maybe use string_view instead
+        std::string tokenAsString = std::string(code.getLine(currentLine)).substr(start,
+                                                                                  length); // TODO maybe use string_view instead
 
-        if(tokenAsString == "PARAM") {
+        if (tokenAsString == "PARAM") {
             token = Token(source, Token::Category::KEYWORD, Token::Type::PARAM);
         } else if (tokenAsString == "VAR") {
             token = Token(source, Token::Category::KEYWORD, Token::Type::VAR);
@@ -128,3 +125,6 @@ int Lexer::determineCategory(Token &token, unsigned start, unsigned length) {
     }
     return 1;
 }
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------

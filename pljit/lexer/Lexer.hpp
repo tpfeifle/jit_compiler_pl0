@@ -3,7 +3,9 @@
 #include <optional>
 #include "Token.hpp"
 #include <memory>
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 class Lexer {
 public:
     std::vector<Token> tokens;
@@ -16,10 +18,13 @@ public:
 
     std::unique_ptr<Token> nextLookahead();
 
-    int determineCategory(Token &token, unsigned start, unsigned length); // assumes current line as line
+    int determineCategory(Token& token, unsigned start, unsigned length); // assumes current line as line
 
     SourceCode& code;
 private:
     int currentPos;
     unsigned currentLine;
 };
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------

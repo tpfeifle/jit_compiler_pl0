@@ -2,11 +2,10 @@
 
 #include "SourceCode.hpp"
 #include <string>
-
-using std::string;
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 class SourceReference {
-private:
     SourceCode code;
 public:
     SourceReference(int lineNum, int charPos, int length, SourceCode& code);
@@ -20,3 +19,6 @@ public:
         return std::to_string(lineNum) + std::to_string(charPos) + std::to_string(length);
     }
 };
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------

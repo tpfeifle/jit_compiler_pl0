@@ -5,7 +5,9 @@
 #include "../source/SourceReference.hpp"
 #include "PTNode.hpp"
 #include <vector>
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 class Parser {
     Lexer lexer;
     std::unique_ptr<PTNode> parseParameterDeclaration();
@@ -22,12 +24,15 @@ class Parser {
     std::unique_ptr<PTNode> parseMultiplicativeExpr();
     std::unique_ptr<PTNode> parseUnaryExpr();
     std::unique_ptr<PTNode> parsePrimaryExpr();
-    SourceReference childrenSourceReference(const std::vector<PTNode>& children);
+    SourceReference childrenSourceReference(const std::vector<std::unique_ptr<PTNode>>& children);
 
-    std::unique_ptr<PTNode> root;
-    std::vector<PTNode> nodes; // TODO check if other data structure better suited
+    std::unique_ptr<Token> currentToken;
+    // std::unique_ptr<PTNode> ptRoot; // TODO check if other data structure better suited
 public:
     explicit Parser(Lexer& lexer) : lexer(lexer) {}
 
-    std::unique_ptr<PTNode> parseFunctionDefinition();
+    std::unique_ptr<NonTerminalPTNode> parseFunctionDefinition();
 };
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------

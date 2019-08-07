@@ -1,7 +1,7 @@
 #include "../../pljit/lexer/Lexer.hpp"
 #include <gtest/gtest.h>
 //---------------------------------------------------------------------------
-using namespace std;
+using namespace pljit;
 // using namespace lexer;
 //---------------------------------------------------------------------------
 /*namespace {

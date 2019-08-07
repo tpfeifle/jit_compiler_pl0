@@ -1,10 +1,15 @@
-#include "PTNode.hpp"
+#pragma once
 //---------------------------------------------------------------------------
-namespace pljit {
+#include <pljit/ast/ASTNode.hpp>
+
+namespace pljit::ir {
 //---------------------------------------------------------------------------
-PTNode::Type PTNode::getType() const {
-    return type;
+/// A visitor to remove dead code for optimization
+struct OptimizeDeadCode : ast::VisitorAST {
+    /// visit each node of the abstract syntax tree recursively
+    void visitASTNode(ast::ASTNode* node);
 };
+
 //---------------------------------------------------------------------------
-} // namespace pljit
+} // namespace pljit::ir
 //---------------------------------------------------------------------------

@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <string>
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 class SourceCode {
 public:
     explicit SourceCode(std::string filename) : filename(std::move(filename)) {};
@@ -20,3 +22,6 @@ private:
     std::vector<std::string> codeLines;
     std::string filename;
 };
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------

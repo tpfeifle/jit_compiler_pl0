@@ -1,9 +1,12 @@
+#pragma once
+
 #include <map>
 #include <pljit/source/SourceReference.hpp>
 
-#pragma once
-
-
+namespace pljit {
+//---------------------------------------------------------------------------
+namespace ast {
+//---------------------------------------------------------------------------
 class Symbol {
 public:
     enum Type {
@@ -13,12 +16,20 @@ public:
     };
     Type type;
     SourceReference reference;
+    bool initialized;
     // TODO: store the value here as well?
 
-    Symbol(Type type, SourceReference reference) : type(type), reference(std::move(reference)) {}
+    Symbol(Type type, SourceReference reference, bool initialized) : type(type), reference(std::move(reference)),
+                                                                     initialized(initialized) {}
 };
 
-class SymbolTable {
+//---------------------------------------------------------------------------
+/*class SymbolTable {
 public:
     std::map<std::string, Symbol> declarations;
-};
+};*/
+//---------------------------------------------------------------------------
+} //namespace ast
+//---------------------------------------------------------------------------
+} //namespace pljit
+//---------------------------------------------------------------------------

@@ -2,7 +2,9 @@
 
 #include "../source/SourceReference.hpp"
 #include <optional>
-
+//---------------------------------------------------------------------------
+namespace pljit {
+//---------------------------------------------------------------------------
 class Token {
 public:
     enum Category {
@@ -35,18 +37,24 @@ public:
         NOT_USED
     };
 
-    Token(SourceReference source, const Category tokenCategory, const Type type) : category(tokenCategory), type(type), source(source) {}
+    Token(SourceReference source, const Category tokenCategory, const Type type) : category(tokenCategory), type(type),
+                                                                                   source(source) {}
 
     Token(Token& token) = default;
     Token(Token&& token) = default;
-    Token& operator=(Token &&other) = default;
-    // Token::Type getType() const;
+    Token& operator=(Token&& other) = default;
+    Token::Type getType() const;
+    // Token::Type getCategory() const; TODO check if category really needed
 
     // virtual ~Token() = default; // public virtual destructor
     Category category;
-    Type type;
     SourceReference source;
+private:
+    Type type;
 };
+//---------------------------------------------------------------------------
+} // namespace pljit
+//---------------------------------------------------------------------------
 
 /*
 

@@ -1,7 +1,7 @@
 #include "../../pljit/parser/Parser.hpp"
 #include <gtest/gtest.h>
 //---------------------------------------------------------------------------
-using namespace std;
+using namespace pljit;
 //---------------------------------------------------------------------------
 TEST(ParserDeathTest, TestExpectError) {
     std::vector<std::string> codeText = {"PARAM width, CONST, height, depth;\n",
@@ -19,6 +19,24 @@ TEST(ParserDeathTest, TestExpectError) {
                                                    //"             ^~~~~");
 }
 
+TEST(Parser1, Test1) {
+    std::vector<std::string> codeText = {"PARAM width, height, depth;\n",
+                                         "VAR volume;\n",
+                                         "CONST density = 2400;\n",
+                                         "CONST density = 2400;\n"};
+    SourceCode code = SourceCode(codeText);
+    Lexer lexer = Lexer(code);
+    //testing::internal::CaptureStdout();
+    Parser parser(lexer);
+    std::shared_ptr<PTNode> pt = parser.parseFunctionDefinition();
+    if(!pt) {
+        std::cout << "Parser failed" << std::endl;
+    }
+    //std::string output = testing::internal::GetCapturedStdout();
+    std::string expectedOutput = "No END";
+    //assert(output == expectedOutput);
+}
+/*
 TEST(ParserDefaultNodesTest, TestNodes) {
     std::vector<std::string> codeText = {"PARAM width, height, depth;\n",
                                          "VAR volume;\n",
@@ -83,4 +101,5 @@ TEST(ParserDefaultNodesTest, TestNodes) {
     // final point
     assert((*pt).children[4].type == PTNode::Type::GenericToken);
 }
+ */
 //---------------------------------------------------------------------------
