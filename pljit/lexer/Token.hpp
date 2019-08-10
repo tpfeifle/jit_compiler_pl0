@@ -37,7 +37,7 @@ public:
     Token& operator=(Token&& other) = default;
     [[nodiscard]] Token::Type getType() const;
 
-    // virtual ~Token() = default; // public virtual destructor
+    virtual ~Token() = default; // public virtual destructor
     pljit_source::SourceReference source;
 private:
     Type type;

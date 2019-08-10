@@ -79,6 +79,7 @@ struct FunctionAST : ASTNode {
 
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~FunctionAST() override = default;
 };
 
 //---------------------------------------------------------------------------
@@ -88,6 +89,7 @@ struct LiteralAST : ExpressionAST { // TODO: Idea use "LiteralAST : ASTNode" and
     explicit LiteralAST(int64_t value) : ExpressionAST(ASTNode::Type::LiteralExpression), value(value) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~LiteralAST() override = default;
 };
 
 //---------------------------------------------------------------------------
@@ -103,6 +105,7 @@ struct UnaryAST : ExpressionAST {
             : ExpressionAST(Type::UnaryExpression), child(std::move(child)), sign(sign) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~UnaryAST() override = default;
 };
 
 //---------------------------------------------------------------------------
@@ -113,6 +116,7 @@ struct IdentifierAST : ExpressionAST {
                                                      identifier(std::move(identifier)) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~IdentifierAST() override = default;
 };
 //---------------------------------------------------------------------------
 struct BinaryOperationAST : ExpressionAST {
@@ -132,6 +136,7 @@ struct BinaryOperationAST : ExpressionAST {
             : ExpressionAST(Type::BinaryExpression), left(std::move(left)), right(std::move(right)), type(type) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~BinaryOperationAST() override = default;
 };
 //---------------------------------------------------------------------------
 struct AssignmentAST : public StatementAST {
@@ -143,6 +148,7 @@ struct AssignmentAST : public StatementAST {
               expression(std::move(expression)) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~AssignmentAST() override = default;
 };
 
 //---------------------------------------------------------------------------
@@ -153,6 +159,7 @@ struct ReturnStatementAST : StatementAST {
             : StatementAST(Type::ReturnStatement), expression(std::move(expression)) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    ~ReturnStatementAST() override = default;
 };
 //---------------------------------------------------------------------------
 }  // namespace pljit_ast
