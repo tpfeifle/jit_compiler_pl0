@@ -1,10 +1,10 @@
 set(PLJIT_SOURCES
     # add your *.cpp files here
-        pljit.cpp
+        function/pljit.cpp
         ast/AST.cpp
         ast/ASTNode.cpp
         ast/DotASTVisitor.cpp
-        ast/SymbolTable.cpp
+        ast/Symbol.cpp
         ir/Evaluate.cpp
         lexer/Lexer.cpp
         parser/Parser.cpp

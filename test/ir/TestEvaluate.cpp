@@ -1,16 +1,17 @@
 #include <gtest/gtest.h>
 #include <vector>
-#include <pljit/pljit.hpp>
+#include <pljit/function/pljit.hpp>
 //---------------------------------------------------------------------------
 using namespace pljit::ast;
 using namespace std;
+using namespace pljit::function;
 using namespace pljit::lexer;
 using namespace pljit::parser;
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit::function {
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestSimpleReturn) {
-    pljit::Pljit jit;
+    Pljit jit;
     auto func = jit.registerFunction({
                                              "BEGIN\n",
                                              "    RETURN 12\n",
@@ -20,7 +21,7 @@ TEST(Evaluate, TestSimpleReturn) {
 }
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestComplexCalculation) {
-    pljit::Pljit jit;
+    Pljit jit;
     auto func = jit.registerFunction({
                                              "BEGIN\n",
                                              "    RETURN 12 * (4 - 1 * 32 / 1) - 3\n",
@@ -30,7 +31,7 @@ TEST(Evaluate, TestComplexCalculation) {
 }
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestUsingVarAndConst) {
-    pljit::Pljit jit;
+    Pljit jit;
     auto func = jit.registerFunction({
                                              "VAR I, cost;\n",
                                              "CONST U = 12, R = 4;\n",
@@ -44,7 +45,7 @@ TEST(Evaluate, TestUsingVarAndConst) {
 }
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestParameters) {
-    pljit::Pljit jit;
+    Pljit jit;
     auto func = jit.registerFunction({
                                              "PARAM U, R;\n",
                                              "VAR I, cost;\n",

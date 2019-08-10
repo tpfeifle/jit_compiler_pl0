@@ -1,9 +1,9 @@
 #pragma once
 
 #include <unordered_map>
-#include <pljit/ast/SymbolTable.hpp>
+#include <pljit/ast/Symbol.hpp>
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::ir {
 //---------------------------------------------------------------------------
 class Evaluate {
 public:
@@ -17,5 +17,5 @@ public:
     // TODO some state whether or not there was an error should be here (requirements)
 };
 //---------------------------------------------------------------------------
-} // namespace pljit
+} // namespace pljit::ir
 //---------------------------------------------------------------------------

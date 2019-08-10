@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../source/SourceReference.hpp"
 #include <optional>
+#include <pljit/source/SourceReference.hpp>
 //---------------------------------------------------------------------------
 namespace pljit::lexer {
 //---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ public:
         NOT_USED //TODO
     };
 
-    Token(SourceReference source, const Type type) : source(source), type(type) {}
+    Token(source::SourceReference source, const Type type) : source(std::move(source)), type(type) {}
     Token(Token& token) = default;
     Token(Token&& token) = default;
 
@@ -38,10 +38,10 @@ public:
     [[nodiscard]] Token::Type getType() const;
 
     // virtual ~Token() = default; // public virtual destructor
-    SourceReference source;
+    source::SourceReference source;
 private:
     Type type;
 };
 //---------------------------------------------------------------------------
-} // namespace pljit
+} // namespace pljit::lexer
 //---------------------------------------------------------------------------

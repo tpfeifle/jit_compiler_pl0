@@ -8,7 +8,7 @@
 #include "../parser/PTNode.hpp"
 #include "iostream"
 #include "ASTNode.hpp"
-#include "SymbolTable.hpp"
+#include "Symbol.hpp"
 
 namespace pljit::ast {
 //---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ class AST {
 
 public:
 
-    std::unique_ptr<FunctionAST> analyzeParseTree(std::shared_ptr<parser::PTNode> root);
+    std::unique_ptr<FunctionAST> analyzeParseTree(const std::shared_ptr<parser::PTNode>& root);
     unsigned currentSymbolId = 0;
     std::unordered_map<std::string, std::pair<Symbol, unsigned>> symbolTable{};
 };

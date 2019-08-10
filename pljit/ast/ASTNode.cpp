@@ -1,25 +1,23 @@
 #include "ASTNode.hpp"
 //---------------------------------------------------------------------------
-namespace pljit {
-//---------------------------------------------------------------------------
-namespace ast {
+namespace pljit::ast {
 //---------------------------------------------------------------------------
 ASTNode::Type ASTNode::getType() const {
     return type;
 }
 //---------------------------------------------------------------------------
-int FunctionAST::execute(pljit::Evaluate& evaluate) {
+int64_t FunctionAST::execute(ir::Evaluate& evaluate) {
     for (auto&& child: children) {
         child->execute(evaluate);
     }
     return evaluate.variables.at("Return");
 }
 //---------------------------------------------------------------------------
-int LiteralAST::execute(pljit::Evaluate& evaluate) {
+int64_t LiteralAST::execute(ir::Evaluate&) {
     return value;
 }
 //---------------------------------------------------------------------------
-int UnaryAST::execute(pljit::Evaluate& evaluate) {
+int64_t UnaryAST::execute(ir::Evaluate& evaluate) {
     if (sign == SignType::Plus) {
         return child->execute(evaluate);
     } else {
@@ -27,23 +25,22 @@ int UnaryAST::execute(pljit::Evaluate& evaluate) {
     }
 }
 //---------------------------------------------------------------------------
-int IdentifierAST::execute(pljit::Evaluate& evaluate) {
-    int temp = evaluate.variables.at(identifier); // TODO
-    return temp;
+int64_t IdentifierAST::execute(ir::Evaluate& evaluate) {
+    return evaluate.variables.at(identifier); // TODO
 }
 //---------------------------------------------------------------------------
 
-int AssignmentAST::execute(pljit::Evaluate& evaluate) {
+int64_t AssignmentAST::execute(ir::Evaluate& evaluate) {
     evaluate.variables[identifier->identifier] = expression->execute(evaluate);
     return 0; // TODO not needed
 }
 //---------------------------------------------------------------------------
-int ReturnStatementAST::execute(pljit::Evaluate& evaluate) {
+int64_t ReturnStatementAST::execute(ir::Evaluate& evaluate) {
     evaluate.variables.insert({"Return", expression->execute(evaluate)});
     return 0; // TODO: actually not really needed
 }
 //---------------------------------------------------------------------------
-int BinaryOperationAST::execute(pljit::Evaluate& evaluate) {
+int64_t BinaryOperationAST::execute(ir::Evaluate& evaluate) {
     switch (type) {
         case OperationType::Plus:
             return left->execute(evaluate) + right->execute(evaluate);
@@ -52,7 +49,7 @@ int BinaryOperationAST::execute(pljit::Evaluate& evaluate) {
         case OperationType::Multiply:
             return left->execute(evaluate) * right->execute(evaluate);
         case OperationType::Divide:
-            int temp = right->execute(evaluate);
+            int64_t temp = right->execute(evaluate);
             if (temp == 0) {
                 std::cout << "Division by zero error" << std::endl;
                 evaluate.errorCode = 1;
@@ -60,7 +57,34 @@ int BinaryOperationAST::execute(pljit::Evaluate& evaluate) {
             return left->execute(evaluate) / temp;
     }
 }
-} //namespace ast
 //---------------------------------------------------------------------------
-} // namespace pljit
+void FunctionAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void LiteralAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void UnaryAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void IdentifierAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void AssignmentAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void ReturnStatementAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+void BinaryOperationAST::accept(ASTVisitor& v) {
+    v.visit(*this);
+}
+//---------------------------------------------------------------------------
+} // namespace pljit::ast
 //---------------------------------------------------------------------------

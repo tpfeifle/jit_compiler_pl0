@@ -1,18 +1,8 @@
 #include <iostream>
-#include <pljit/parser/DotPTVisitor.hpp>
-#include <pljit/ir/OptimizeDeadCode.hpp>
-#include <pljit/ir/OptimizeConstPropagation.hpp>
-#include "lexer/Lexer.hpp"
-#include "parser/Parser.hpp"
-#include "parser/PTNode.hpp"
-#include "ast/AST.hpp"
-#include "pljit.hpp"
-#include "ast/DotASTVisitor.hpp"
-#include "ir/Evaluate.hpp"
+#include <pljit/function/pljit.hpp>
 
 //---------------------------------------------------------------------------
-using namespace std;
-using namespace pljit;
+using namespace pljit::function;
 //---------------------------------------------------------------------------
 int main() {
     Pljit jit; // Create an object that manages just-in-time

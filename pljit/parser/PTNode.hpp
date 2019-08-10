@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "../source/SourceReference.hpp"
+#include <memory>
+#include <pljit/source/SourceReference.hpp>
 #include "iostream"
 //---------------------------------------------------------------------------
 namespace pljit::parser {
@@ -11,7 +12,6 @@ struct IdentifierPTNode;
 struct GenericTokenPTNode;
 struct OperatorAlternationPTNode;
 struct NonTerminalPTNode;
-struct NonTerminalAlternationPTNode;
 
 class PTVisitor {
 public:
@@ -47,11 +47,11 @@ public:
     };
 
 
-    SourceReference source;
+    source::SourceReference source;
 
     virtual void accept(PTVisitor& v) = 0;
 
-    explicit PTNode(const Type type, SourceReference source) : source(std::move(source)), type(type) {}
+    explicit PTNode(const Type type, source::SourceReference source) : source(std::move(source)), type(type) {}
 
     virtual ~PTNode() = default; //public virtual destructor
     // TODO: Check if the following required for all derived classes
@@ -64,33 +64,27 @@ private:
 };
 
 struct LiteralPTNode : public PTNode {
-    explicit LiteralPTNode(SourceReference source, int value) : PTNode(PTNode::Type::Literal, std::move(source)),
+    explicit LiteralPTNode(source::SourceReference source, int64_t value) : PTNode(PTNode::Type::Literal, std::move(source)),
                                                                 value(value) {};
-    void accept(PTVisitor& v) override  {
-        v.visit(*this);
-    }
-    int getValue() const;
+    void accept(PTVisitor& v) override;
+    [[nodiscard]] int64_t getValue() const;
 private:
-    int value;
+    int64_t value;
 };
 
 struct IdentifierPTNode : public PTNode {
-    explicit IdentifierPTNode(SourceReference source) : PTNode(PTNode::Type::Identifier, std::move(source)) {};
+    explicit IdentifierPTNode(source::SourceReference source) : PTNode(PTNode::Type::Identifier, std::move(source)) {};
 
     std::string getName() {
         return source.getText();
     }
-    void accept(PTVisitor& v) override  {
-        v.visit(*this);
-    }
+    void accept(PTVisitor& v) override;
 };
 
 struct GenericTokenPTNode : public PTNode {
 public:
-    explicit GenericTokenPTNode(SourceReference source) : PTNode(PTNode::Type::GenericToken, std::move(source)) {};
-    void accept(PTVisitor& v) override  {
-        v.visit(*this);
-    }
+    explicit GenericTokenPTNode(source::SourceReference source) : PTNode(PTNode::Type::GenericToken, std::move(source)) {};
+    void accept(PTVisitor& v) override;
 };
 
 struct OperatorAlternationPTNode : public GenericTokenPTNode {
@@ -100,7 +94,7 @@ struct OperatorAlternationPTNode : public GenericTokenPTNode {
         Multiply,
         Divide
     };
-    explicit OperatorAlternationPTNode(SourceReference source, OperatorType operatorType) : GenericTokenPTNode(
+    explicit OperatorAlternationPTNode(source::SourceReference source, OperatorType operatorType) : GenericTokenPTNode(
             std::move(source)), operatorType(operatorType) {};
     [[nodiscard]] OperatorType getOperatorType() const;
 private:
@@ -109,21 +103,11 @@ private:
 
 struct NonTerminalPTNode : public PTNode {
 
-    explicit NonTerminalPTNode(SourceReference source, PTNode::Type type, std::vector<std::unique_ptr<PTNode>> children)
+    explicit NonTerminalPTNode(source::SourceReference source, PTNode::Type type, std::vector<std::unique_ptr<PTNode>> children)
             : PTNode(type, std::move(source)), children(std::move(children)) {};
-    void accept(PTVisitor& v) override  {
-        v.visit(*this);
-    }
+    void accept(PTVisitor& v) override;
     // [[nodiscard]] std::vector<std::unique_ptr<PTNode>> getChildren() const;
     std::vector<std::unique_ptr<PTNode>> children;
-};
-
-struct NonTerminalAlternationPTNode : public NonTerminalPTNode {
-    explicit NonTerminalAlternationPTNode(SourceReference source, PTNode::Type type,
-                                          std::vector<std::unique_ptr<PTNode>> children, PTNode::Type chosenAlternation)
-            : NonTerminalPTNode(std::move(source), type, std::move(children)), chosenAlternation(chosenAlternation) {};
-    PTNode::Type chosenAlternation;
-    // TODO handle optional and repeating children
 };
 
 //---------------------------------------------------------------------------

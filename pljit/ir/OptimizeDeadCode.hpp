@@ -15,7 +15,6 @@ struct OptimizeDeadCode : public ast::ASTVisitor {
     void visit(ast::LiteralAST& node) override;
     void visit(ast::IdentifierAST& node) override;
 };
-
 //---------------------------------------------------------------------------
 } // namespace pljit::ir
 //---------------------------------------------------------------------------

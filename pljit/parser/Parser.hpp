@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../lexer/Token.hpp"
-#include "../lexer/Lexer.hpp"
-#include "../source/SourceReference.hpp"
+#include <pljit/source/SourceReference.hpp>
+#include <pljit/lexer/Token.hpp>
+#include <pljit/lexer/Lexer.hpp>
 #include "PTNode.hpp"
 #include <vector>
 //---------------------------------------------------------------------------
@@ -24,13 +24,11 @@ class Parser {
     std::unique_ptr<PTNode> parseMultiplicativeExpr();
     std::unique_ptr<PTNode> parseUnaryExpr();
     std::unique_ptr<PTNode> parsePrimaryExpr();
-    SourceReference childrenSourceReference(const std::vector<std::unique_ptr<PTNode>>& children);
+    source::SourceReference childrenSourceReference(const std::vector<std::unique_ptr<PTNode>>& children);
 
     std::unique_ptr<lexer::Token> currentToken;
-    // std::unique_ptr<PTNode> ptRoot; // TODO check if other data structure better suited
 public:
     explicit Parser(lexer::Lexer& lexer) : lexer(lexer) {}
-
     std::unique_ptr<NonTerminalPTNode> parseFunctionDefinition();
 };
 //---------------------------------------------------------------------------

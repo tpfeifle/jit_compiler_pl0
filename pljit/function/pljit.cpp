@@ -2,34 +2,11 @@
 #include "pljit.hpp"
 
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::function {
 //---------------------------------------------------------------------------
 FunctionHandle Pljit::registerFunction(std::vector<std::string> codeText) {
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     return FunctionHandle(code);
-}
-//---------------------------------------------------------------------------
-template<typename... Sizes>
-int FunctionHandle::operator()(Sizes... sizes) {
-    std::vector<unsigned> args = {static_cast<unsigned>(sizes)...};
-
-    if (!isCompiled) {
-        this->compile();
-        isCompiled = true;
-    }
-
-    Evaluate evaluate = Evaluate(ast.symbolTable);
-    for (auto& el:ast.symbolTable) {
-        if (el.second.first.type == ast::Symbol::Type::Param) {
-            if (args.size() < el.second.second + 1) {
-                std::cout << "Error: missing parameter for call" << std::endl;
-                return -1; //TODO
-            }
-            evaluate.variables[el.first] = args[el.second.second];
-        }
-    }
-    astRoot->execute(evaluate);
-    return evaluate.variables["Return"];
 }
 //---------------------------------------------------------------------------
 void FunctionHandle::compile() {
@@ -58,5 +35,5 @@ void FunctionHandle::compile() {
     ir::OptimizeConstPropagation optimizeConstPropagation = ir::OptimizeConstPropagation(constValues);
     optimizeConstPropagation.visit(*astRoot);
 }
-} // namespace pljit
+} // namespace pljit::function
 //---------------------------------------------------------------------------

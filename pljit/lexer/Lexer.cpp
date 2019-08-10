@@ -12,7 +12,7 @@ std::unique_ptr<Token> Lexer::next() {
         unsigned beginningOfToken = 0;
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
-                Token token = Token(SourceReference(0, 0, 1, code),
+                Token token = Token(source::SourceReference(0, 0, 1, code),
                                               Token::Type::Plus); // TODO: this feels stupid to use as a placeholder
 
                 if (determineCategory(token, i, 1) == -1) {
@@ -44,27 +44,10 @@ std::unique_ptr<Token> Lexer::next() {
     std::cout << "why am I even here -.- (Lexer)" << std::endl;
     return nullptr;
 }
-
-/**
- * return next token, but do not increment the currentLine or currentPos --> used for repeats to look ahead
- * @return
- */
-//---------------------------------------------------------------------------
-std::unique_ptr<Token> Lexer::nextLookahead() {
-    unsigned backupCurrentLine = currentLine;
-    unsigned backupCurrentPos = currentPos;
-    std::unique_ptr<Token> token = this->next();
-    currentLine = backupCurrentLine;
-    currentPos = backupCurrentPos;
-    if (token) {
-        tokens.pop_back();
-    }
-    return token;
-}
 //---------------------------------------------------------------------------
 int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     char firstChar = code.getCharacter(currentLine, start);
-    SourceReference source = SourceReference(currentLine, start, length, code);
+    source::SourceReference source = source::SourceReference(currentLine, start, length, code);
     if (firstChar == '+' && length == 1) {
         token = Token(source, Token::Type::Plus);
     } else if (firstChar == '-' && length == 1) {
@@ -126,5 +109,5 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     return 1;
 }
 //---------------------------------------------------------------------------
-} // namespace pljit
+} // namespace pljit::lexer
 //---------------------------------------------------------------------------

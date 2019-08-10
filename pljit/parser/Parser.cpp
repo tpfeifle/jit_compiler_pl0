@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 #include "../lexer/Token.hpp"
 #include <stdlib.h>
+#include <inttypes.h>
 
 //---------------------------------------------------------------------------
 using namespace std;
@@ -16,9 +17,9 @@ unsigned lengthOfChildren(const vector<unique_ptr<PTNode>>& children) {
     return length;
 }
 //---------------------------------------------------------------------------
-SourceReference Parser::childrenSourceReference(const vector<unique_ptr<PTNode>>& children) {
+source::SourceReference Parser::childrenSourceReference(const vector<unique_ptr<PTNode>>& children) {
     unsigned length = lengthOfChildren(children);
-    return SourceReference(children[0]->source.lineNum, children[0]->source.charPos, length, lexer.code);
+    return source::SourceReference(children[0]->source.lineNum, children[0]->source.charPos, length, lexer.code);
 }
 //---------------------------------------------------------------------------
 unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition() {
@@ -206,8 +207,7 @@ unique_ptr<PTNode> Parser::parseInitDeclarator() {
         currentToken->source.printContext("Expected literal");
         return nullptr;
     }
-    children.emplace_back(make_unique<LiteralPTNode>(currentToken->source, stoi(currentToken->source.getText(),
-                                                                           nullptr, 10)));
+    children.emplace_back(make_unique<LiteralPTNode>(currentToken->source, stoll(currentToken->source.getText(), nullptr, 10)));
     currentToken = lexer.next();
     return make_unique<NonTerminalPTNode>(childrenSourceReference(children),
                                           PTNode::Type::InitDeclarator, move(children));
@@ -265,7 +265,6 @@ unique_ptr<PTNode> Parser::parseStatementList() {
 //---------------------------------------------------------------------------
 unique_ptr<PTNode> Parser::parseStatement() {
     vector<unique_ptr<PTNode>> children;
-    PTNode::Type alternationType;
 
     if (currentToken && currentToken->getType() == Token::Type::Return) {
         children.emplace_back(make_unique<GenericTokenPTNode>(currentToken->source));
@@ -277,7 +276,6 @@ unique_ptr<PTNode> Parser::parseStatement() {
         }
 
         children.emplace_back(move(additiveExpr));
-        alternationType = PTNode::Type::AdditiveExpr;
     } else {
         unique_ptr<PTNode> assignmentExpr = parseAssignmentExpr();
         if (!assignmentExpr) {
@@ -285,11 +283,9 @@ unique_ptr<PTNode> Parser::parseStatement() {
             return nullptr;
         }
         children.emplace_back(move(assignmentExpr));
-        alternationType = PTNode::Type::AssignmentExpr;
     }
-    return make_unique<NonTerminalAlternationPTNode>(childrenSourceReference(children),
-                                                     PTNode::Type::Statement, move(children),
-                                                     alternationType);
+    return make_unique<NonTerminalPTNode>(childrenSourceReference(children),
+                                                     PTNode::Type::Statement, move(children));
 }
 //---------------------------------------------------------------------------
 unique_ptr<PTNode> Parser::parseAssignmentExpr() {
@@ -420,15 +416,12 @@ unique_ptr<PTNode> Parser::parsePrimaryExpr() {
     }
 
     vector<unique_ptr<PTNode>> children;
-    PTNode::Type alternationType;
     if (currentToken->getType() == Token::Type::Identifier) {
         children.emplace_back(make_unique<IdentifierPTNode>(currentToken->source));
-        alternationType = PTNode::Type::Identifier;
     } else if (currentToken->getType() == Token::Type::Literal) {
         children.emplace_back(make_unique<LiteralPTNode>(currentToken->source,
                                                          stoi(currentToken->source.getText(),
                                                               nullptr, 10)));
-        alternationType = PTNode::Type::Literal;
     } else if (currentToken->getType() == Token::Type::Left_Bracket) {
         children.emplace_back(make_unique<GenericTokenPTNode>(currentToken->source)); // left bracket
         currentToken = lexer.next();
@@ -444,12 +437,11 @@ unique_ptr<PTNode> Parser::parsePrimaryExpr() {
         }
         children.emplace_back(move(additiveExpr));
         children.emplace_back(make_unique<GenericTokenPTNode>(currentToken->source)); //right bracket
-        alternationType = PTNode::Type::AdditiveExpr;
     }
     currentToken = lexer.next();
 
-    return make_unique<NonTerminalAlternationPTNode>(childrenSourceReference(children), PTNode::Type::PrimaryExpr,
-                                                     move(children), alternationType);
+    return make_unique<NonTerminalPTNode>(childrenSourceReference(children), PTNode::Type::PrimaryExpr,
+                                                     move(children));
 }
 //---------------------------------------------------------------------------
 } // namespace pljit::parser

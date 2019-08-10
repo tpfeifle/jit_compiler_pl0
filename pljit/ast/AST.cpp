@@ -6,7 +6,7 @@ using namespace pljit::parser;
 //---------------------------------------------------------------------------
 namespace pljit::ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> AST::analyzeParseTree(shared_ptr<PTNode> root)
+unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
 // analyze the ParseTree: This is the starting-point for the analysis
 {
     auto* node = static_cast<NonTerminalPTNode*>(root.get());
@@ -26,25 +26,26 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(shared_ptr<PTNode> root)
     }
     if (node->children[childrenIndex]->getType() == PTNode::Type::ConstDeclaration) {
         auto* constDeclaration = static_cast<NonTerminalPTNode*>(node->children[childrenIndex].get());
-        analyzeConstDeclarations(constDeclaration,Symbol::Type::Const);
+        analyzeConstDeclarations(constDeclaration, Symbol::Type::Const);
         childrenIndex++;
     }
 
     auto* compoundStatement = static_cast<NonTerminalPTNode*>(node->children[childrenIndex].get());
-    if(!compoundStatement) {
+    if (!compoundStatement) {
         return nullptr;
     }
     auto* statementList = static_cast<NonTerminalPTNode*>(compoundStatement->children[1].get());
-    if(!statementList) {
+    if (!statementList) {
         return nullptr;
     }
     bool hasReturn = false;
-    for (unsigned i = 0; i < statementList->children.size(); i++) {
-        auto* statement = static_cast<NonTerminalAlternationPTNode*>(statementList->children[i].get());
+    for (unsigned long i = 0; i < statementList->children.size(); i++) {
+        auto* statement = static_cast<NonTerminalPTNode*>(statementList->children[i].get());
         // TODO: using .get or .release?
         // TODO: this casting is really ugly ...
-        unique_ptr<StatementAST> ASTstatement = unique_ptr<StatementAST>(static_cast<StatementAST*>(analyzeStatement(statement).release()));
-        if(!ASTstatement) {
+        unique_ptr<StatementAST> ASTstatement = unique_ptr<StatementAST>(
+                static_cast<StatementAST*>(analyzeStatement(statement).release()));
+        if (!ASTstatement) {
             return nullptr;
         }
         if (ASTstatement->getType() == ASTNode::Type::ReturnStatement) {
@@ -55,16 +56,14 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(shared_ptr<PTNode> root)
     }
     if (!hasReturn) {
         cerr << "Function has no return statement" << endl;
-        // exit(-1); TODO
     }
 
     return make_unique<FunctionAST>(move(children));
 }
 //---------------------------------------------------------------------------
 void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
-    // TODO: maybe do not use a simple pointer (always use unique/shared ptr)
     auto* declaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
-    for (unsigned i = 0; i < declaratorList->children.size(); i++) {
+    for (unsigned long i = 0; i < declaratorList->children.size(); i++) {
         if (declaratorList->children[i]->getType() == PTNode::Type::Identifier) {
             // for declarator
             auto* identiferToken = static_cast<IdentifierPTNode*>(declaratorList->children[i].get());
@@ -84,7 +83,7 @@ void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
 //---------------------------------------------------------------------------
 void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     auto* initDeclaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
-    for (unsigned i = 0; i < initDeclaratorList->children.size(); i++) {
+    for (unsigned long i = 0; i < initDeclaratorList->children.size(); i++) {
         auto* initDeclarator = static_cast<NonTerminalPTNode*>(initDeclaratorList->children[i].get());
 
         auto* identiferToken = static_cast<IdentifierPTNode*>(initDeclarator->children[0].get());
@@ -103,34 +102,28 @@ void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
 }
 //---------------------------------------------------------------------------
 unique_ptr<StatementAST> AST::analyzeStatement(NonTerminalPTNode* node) {
-    auto* statement = static_cast<NonTerminalAlternationPTNode*>(node);
-    if (statement->chosenAlternation == PTNode::Type::AssignmentExpr) {
+    auto* statement = static_cast<NonTerminalPTNode*>(node);
+    if (statement->children.size() == 1) {
         auto* assignmentExpr = static_cast<NonTerminalPTNode*>(statement->children[0].get());
         auto* identiferToken = static_cast<IdentifierPTNode*>(assignmentExpr->children[0].get());
         string identifier = identiferToken->getName();
         if (symbolTable.find(identifier) == symbolTable.end()) {
             identiferToken->source.printContext("Using an undeclared identifier");
             return nullptr;
-            // exit(-1);
         }
         if (symbolTable.at(identifier).first.type == Symbol::Type::Const) {
             identiferToken->source.printContext("Assigning a value to a constant");
             return nullptr;
-            // exit(-1);
         }
         symbolTable.at(identifier).first.initialized = true;
         auto* additiveExpr = static_cast<NonTerminalPTNode*>(assignmentExpr->children[2].get());
-        return make_unique<AssignmentAST>(make_unique<IdentifierAST>(identifier), analyzeAdditiveExpression(additiveExpr));
+        return make_unique<AssignmentAST>(make_unique<IdentifierAST>(identifier),
+                                          analyzeAdditiveExpression(additiveExpr));
         // this has to be stored in context with identifier
-    } else if (statement->chosenAlternation == PTNode::Type::AdditiveExpr) {
+    } else { // additive expression
         auto* additiveExprStatement = static_cast<NonTerminalPTNode*>(statement->children[1].get());
         // this is return
         return make_unique<ReturnStatementAST>(analyzeAdditiveExpression(additiveExprStatement));
-    } else {
-        // not expecting this
-        cout << "FOOO should not happen" << endl;
-        return nullptr;
-        // exit(-1);
     }
 }
 //---------------------------------------------------------------------------
@@ -158,30 +151,26 @@ unique_ptr<ExpressionAST> AST::analyzeMultiplicativeExpression(NonTerminalPTNode
     if (unaryExpr->children.size() == 2) {
         unaryChildIndex++;
     }
-    // TODO regard this signOperator in the left somehow
 
-    auto* primaryExpr = static_cast<NonTerminalAlternationPTNode*>(unaryExpr->children[unaryChildIndex].get());
+    auto* primaryExpr = static_cast<NonTerminalPTNode*>(unaryExpr->children[unaryChildIndex].get());
     unique_ptr<ExpressionAST> left;
-    if (primaryExpr->chosenAlternation == PTNode::Type::Identifier) {
+    if (primaryExpr->children[0]->getType() == PTNode::Type::Identifier) {
         auto* identiferToken = static_cast<IdentifierPTNode*>(primaryExpr->children[0].get());
         string identifier = identiferToken->getName();
         if (symbolTable.find(identifier) == symbolTable.end()) {
             identiferToken->source.printContext("Using an undeclared identifier");
             return nullptr;
-            // exit(-1);
         }
         if (!symbolTable.at(identifier).first.initialized) {
             identiferToken->source.printContext("Using an uninitialized identifier");
             return nullptr;
-            // exit(-1);
         }
         left = make_unique<IdentifierAST>(identifier);
-    } else if (primaryExpr->chosenAlternation == PTNode::Type::Literal) {
+    } else if (primaryExpr->children[0]->getType() == PTNode::Type::Literal) {
         auto* literal = static_cast<LiteralPTNode*>(primaryExpr->children[0].get());
         left = make_unique<LiteralAST>(literal->getValue());
     } else {
-        // TODO: doe we need to handle the brackets? I guess so?
-        if(primaryExpr->children.size() == 3) { // has brackets
+        if (primaryExpr->children.size() == 3) { // has brackets
             left = analyzeAdditiveExpression(static_cast<NonTerminalPTNode*>(primaryExpr->children[1].get()));
         } else { // no brackets
             left = analyzeAdditiveExpression(static_cast<NonTerminalPTNode*>(primaryExpr->children[0].get()));
