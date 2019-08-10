@@ -27,6 +27,7 @@ class Parser {
     pljit_source::SourceReference childrenSourceReference(const std::vector<std::unique_ptr<PTNode>>& children);
 
     std::unique_ptr<pljit_lexer::Token> currentToken;
+    bool errorDuringDeclaration = false;
 public:
     explicit Parser(pljit_lexer::Lexer& lexer) : lexer(lexer) {}
     std::unique_ptr<NonTerminalPTNode> parseFunctionDefinition();

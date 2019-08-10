@@ -193,7 +193,7 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonT
         } else {
             operatorType = BinaryOperationAST::Divide;
         }
-        // TODO need to know the choice of plus or minus
+
         auto right = analyzeMultiplicativeExpression(static_cast<NonTerminalPTNode*>(node->children[2].get()));
         return make_unique<BinaryOperationAST>(move(left), operatorType, move(right));
     }

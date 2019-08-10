@@ -7,17 +7,13 @@ namespace pljit_source {
 //---------------------------------------------------------------------------
 class SourceCode {
 public:
-    explicit SourceCode(std::string filename) : filename(std::move(filename)) {};
-    explicit SourceCode(std::vector<std::string> codeLines) : codeLines(std::move(codeLines)) {}; // Useful for testing
-
-    std::string getLine(unsigned index);
-    char getCharacter(unsigned line, unsigned offset);
-
-    unsigned numberOfLines();
+    explicit SourceCode(std::vector<std::string> codeLines) : codeLines(std::move(codeLines)) {};
+    [[nodiscard]] std::string getLine(unsigned index) const;
+    [[nodiscard]] char getCharacter(unsigned line, unsigned offset) const;
+    [[nodiscard]] unsigned numberOfLines() const;
 
 private:
     std::vector<std::string> codeLines;
-    std::string filename;
 };
 //---------------------------------------------------------------------------
 } // namespace pljit_source

@@ -71,7 +71,7 @@ void DotASTVisitor::visit(IdentifierAST& node) {
 }
 //---------------------------------------------------------------------------
 void DotASTVisitor::visit(LiteralAST& node) {
-    std::cout << "AST" << node_count << "[label=\" " << node.value << " \"];" << std::endl;
+    std::cout << "AST" << node_count << "[label=\" " << node.getValue() << " \"];" << std::endl;
 }
 //---------------------------------------------------------------------------
 } // namespace pljit_ast

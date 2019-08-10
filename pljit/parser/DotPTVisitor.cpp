@@ -69,7 +69,7 @@ void DotPTVisitor::visit(IdentifierPTNode& node) {
     node_count++;
 }
 void DotPTVisitor::visit(LiteralPTNode& node) {
-    std::cout << "Literal" << node_count << "[label=\""<< node.getValue() << "\"];" << std::endl;
+    std::cout << "Literal" << node_count << "[label=\"" << node.getValue() << "\"];" << std::endl;
     node_count++;
 }
 void DotPTVisitor::visit(GenericTokenPTNode& node) {
@@ -79,7 +79,7 @@ void DotPTVisitor::visit(GenericTokenPTNode& node) {
 void DotPTVisitor::visit(NonTerminalPTNode& node) {
     std::string label = nodeTypeToString(node.getType());
     unsigned thisNodeId = node_count;
-    std::cout << label << thisNodeId << "[label=\""<< label << "\"];" << std::endl;
+    std::cout << label << thisNodeId << "[label=\"" << label << "\"];" << std::endl;
     for (auto&& child: node.children) {
         node_count++;
         std::cout << label << thisNodeId << " -> "

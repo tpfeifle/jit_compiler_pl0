@@ -13,7 +13,7 @@ std::unique_ptr<Token> Lexer::next() {
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
                 Token token = Token(pljit_source::SourceReference(0, 0, 1, code),
-                                              Token::Type::Plus); // TODO: this feels stupid to use as a placeholder
+                                              Token::Type::Invalid); // TODO: this feels stupid to use as a placeholder
 
                 if (determineCategory(token, i, 1) == -1) {
                     //invalid character -->
@@ -28,9 +28,8 @@ std::unique_ptr<Token> Lexer::next() {
                     if (isspace(code.getCharacter(currentLine, i)) ||
                         determineCategory(token, beginningOfToken, i + 1 - beginningOfToken) == -1) {
                         determineCategory(token, beginningOfToken, i - beginningOfToken);
-                        tokens.emplace_back(token);
                         currentPos = i;
-                        return std::make_unique<Token>(tokens.back());
+                        return std::make_unique<Token>(token);
                     }
                     i++;
                 }
@@ -38,11 +37,16 @@ std::unique_ptr<Token> Lexer::next() {
             }
             i++;
         }
+        if(currentLine+1 == code.numberOfLines()) {
+            break; // TODO make this nicer
+        }
         currentLine++;
         currentPos = 0;
     }
     // std::cout << "why am I even here -.- (Lexer)" << std::endl;
-    return nullptr;
+    Token endToken = Token(pljit_source::SourceReference(currentLine, currentPos, 1, code),
+                          Token::Type::Invalid);
+    return std::make_unique<Token>(endToken); // this is after there was nothing to read anymore, provide source location for error messages in parser
 }
 //---------------------------------------------------------------------------
 int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
@@ -74,7 +78,7 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     } else if (isdigit(firstChar)) {
         for (unsigned i = 0; i < length; i++) {
             if (!isdigit(code.getCharacter(currentLine, start + i))) {
-                token = Token(source, Token::Type::NOT_USED);
+                token = Token(source, Token::Type::Invalid);
                 return -1;
             }
         }
@@ -82,7 +86,7 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     } else {
         for (unsigned i = 0; i < length; i++) {
             if (!isalpha(code.getCharacter(currentLine, start + i))) {
-                token = Token(source, Token::Type::NOT_USED);
+                token = Token(source, Token::Type::Invalid);
                 return -1;
             }
         }

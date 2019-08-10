@@ -10,14 +10,15 @@ class SourceReference {
 public:
     SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code);
 
-    void printContext(std::string_view message);
-    std::string getText();
+    void printContext(std::string_view message) const;
+    [[nodiscard]] std::string getText() const;
+    [[nodiscard]] unsigned getLineNum() const;
+    [[nodiscard]] unsigned getCharPos() const;
+    [[nodiscard]] unsigned getLength() const;
+private:
     unsigned lineNum;
     unsigned charPos;
     unsigned length;
-    std::string toString() {
-        return std::to_string(lineNum) + std::to_string(charPos) + std::to_string(length);
-    }
 };
 //---------------------------------------------------------------------------
 } // namespace pljit_source

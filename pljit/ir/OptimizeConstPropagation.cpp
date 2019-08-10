@@ -88,7 +88,7 @@ void OptimizeConstPropagation::visit(pljit_ast::UnaryAST& node) {
     }
 }
 void OptimizeConstPropagation::visit(pljit_ast::LiteralAST& node) {
-    expressionMapping.insert({node_count, node.value});
+    expressionMapping.insert({node_count, node.getValue()});
 }
 void OptimizeConstPropagation::visit(pljit_ast::IdentifierAST& node) {
     if (constValues.find(node.identifier) != constValues.end()) {

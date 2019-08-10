@@ -6,6 +6,10 @@ ASTNode::Type ASTNode::getType() const {
     return type;
 }
 //---------------------------------------------------------------------------
+int64_t LiteralAST::getValue() const {
+    return value;
+}
+//---------------------------------------------------------------------------
 int64_t FunctionAST::execute(pljit_ir::Evaluate& evaluate) {
     for (auto&& child: children) {
         child->execute(evaluate);

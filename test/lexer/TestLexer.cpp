@@ -15,19 +15,27 @@ TEST(Lexer, TestParametersAll) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
 
     std::vector<TT> expectedTypes = {TT::Param, TT::Identifier, TT::Colon, TT::Identifier, TT::Colon, TT::Identifier,
                                      TT::Semicolon, TT::Var, TT::Identifier, TT::Semicolon,
                                      TT::Const, TT::Identifier, TT::Equal, TT::Literal, TT::Semicolon};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 
     // TODO create a test to validate the source of the tokens
-    /*assert(lexer.tokens[8].source.lineNum == 1);
-    assert(lexer.tokens[8].source.charPos == 4);
-    assert(lexer.tokens[8].source.length == 6);*/
+    /*assert(lexerTokens[8].source.lineNum == 1);
+    assert(lexerTokens[8].source.charPos == 4);
+    assert(lexerTokens[8].source.length == 6);*/
 }
 
 TEST(Lexer, TestParametersNoVar) {
@@ -36,12 +44,19 @@ TEST(Lexer, TestParametersNoVar) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::vector<TT> expectedTypes = {TT::Param, TT::Identifier, TT::Colon, TT::Identifier, TT::Colon, TT::Identifier,
                                      TT::Semicolon, TT::Const, TT::Identifier, TT::Equal, TT::Literal, TT::Colon,
                                      TT::Identifier, TT::Equal, TT::Literal, TT::Semicolon};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 }
 
@@ -50,11 +65,18 @@ TEST(Lexer, TestParametersNoVarNoParam) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::vector<TT> expectedTypes = {TT::Const, TT::Identifier, TT::Equal, TT::Literal, TT::Colon,
                                      TT::Identifier, TT::Equal, TT::Literal, TT::Semicolon};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 }
 
@@ -63,12 +85,19 @@ TEST(Lexer, TestSimpleStatement) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::vector<TT> expectedTypes = {TT::Identifier, TT::Assignment, TT::Literal, TT::Multiply,
                                      TT::Left_Bracket, TT::Literal, TT::Plus, TT::Literal, TT::Right_Bracket,
                                      TT::Semicolon};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 }
 
@@ -77,13 +106,20 @@ TEST(Lexer, TestComplexStatement) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::vector<TT> expectedTypes = {TT::Identifier, TT::Assignment, TT::Identifier, TT::Multiply,
                                      TT::Literal, TT::Plus, TT::Literal, TT::Identifier, TT::Minus,
                                      TT::Literal, TT::Multiply, TT::Literal, TT::Identifier, TT::Semicolon};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
         assert(expectedTypes.size() >= i);
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 }
 
@@ -97,14 +133,21 @@ TEST(Lexer, TestFullProgram) {
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::vector<TT> expectedTypes = {TT::Param, TT::Identifier, TT::Semicolon,
                                      TT::Const, TT::Identifier, TT::Equal, TT::Literal, TT::Semicolon,
                                      TT::Begin, TT::Identifier, TT::Assignment, TT::Identifier, TT::Semicolon,
                                      TT::Return, TT::Identifier, TT::End, TT::Final};
-    for (unsigned long i = 0; i < lexer.tokens.size(); i++) {
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
         assert(expectedTypes.size() > i);
-        assert(lexer.tokens[i].getType() == expectedTypes[i]);
+        assert(lexerTokens[i].getType() == expectedTypes[i]);
     }
 }
 
@@ -114,7 +157,14 @@ TEST(Lexer, TestExpectError) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     testing::internal::CaptureStderr();
-    while (lexer.next()) {}
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(!token || token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
     std::string output = testing::internal::GetCapturedStderr();
     std::string expectedOutput = "0:5:Unexpected character\n"
                                  "PARAM? width;"
@@ -127,8 +177,15 @@ TEST(Lexer, TestNoWhitespaces) {
     std::vector<std::string> codeText = {"PARAM width,  height,  temp;"};
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
-    while(lexer.next()) {}
-    for (Token token: lexer.tokens) {
+    std::vector<Token> lexerTokens;
+    while (true) {
+        std::unique_ptr<Token> token = lexer.next();
+        if(token->getType() == Token::Type::Invalid) {
+            break;
+        }
+        lexerTokens.emplace_back(*token);
+    }
+    for (Token token: lexerTokens) {
         std::string text = token.source.getText();
         assert(std::count_if(text.begin(), text.end(), isspace) == 0);
     }

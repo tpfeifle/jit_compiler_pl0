@@ -8,7 +8,6 @@ namespace pljit_lexer {
 //---------------------------------------------------------------------------
 class Lexer {
 public:
-    std::vector<Token> tokens;
 
     Lexer(pljit_source::SourceCode& code) : code(code), currentPos(0), currentLine(0) {}
 

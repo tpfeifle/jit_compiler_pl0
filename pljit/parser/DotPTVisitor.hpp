@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------
 namespace pljit_parser {
 class DotPTVisitor : public PTVisitor {
-    std::string nodeTypeToString(PTNode::Type type);
+    static std::string nodeTypeToString(PTNode::Type type);
     unsigned node_count = 0;
 
 public:

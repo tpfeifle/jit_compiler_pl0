@@ -83,13 +83,14 @@ struct FunctionAST : ASTNode {
 };
 
 //---------------------------------------------------------------------------
-struct LiteralAST : ExpressionAST { // TODO: Idea use "LiteralAST : ASTNode" and then the types of ASTNode contain all possible types directly
-    int64_t value;
-
+struct LiteralAST : ExpressionAST {
     explicit LiteralAST(int64_t value) : ExpressionAST(ASTNode::Type::LiteralExpression), value(value) {};
     void accept(ASTVisitor& v) override;
     int64_t execute(pljit_ir::Evaluate& evaluate) override;
     ~LiteralAST() override = default;
+    [[nodiscard]] int64_t getValue() const;
+private:
+    int64_t value;
 };
 
 //---------------------------------------------------------------------------
