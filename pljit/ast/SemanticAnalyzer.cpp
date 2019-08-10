@@ -55,7 +55,8 @@ unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(unique_ptr<NonTermina
     if (!hasReturn) {
         cerr << "Function has no return statement" << endl;
     }
-    return make_unique<FunctionAST>(move(children));
+    std::unique_ptr<FunctionAST> res = make_unique<FunctionAST>(move(children));
+    return res;
 }
 //---------------------------------------------------------------------------
 void SemanticAnalyzer::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {

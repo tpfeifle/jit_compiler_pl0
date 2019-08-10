@@ -53,8 +53,9 @@ std::unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition() {
     children.emplace_back(move(compoundStatement));
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // final token "."
 
-    return std::make_unique<NonTerminalPTNode>(childrenSourceReference(children), PTNode::Type::FunctionDefinition,
+    std::unique_ptr<NonTerminalPTNode> res =  std::make_unique<NonTerminalPTNode>(childrenSourceReference(children), PTNode::Type::FunctionDefinition,
                                                move(children));
+    return res;
 }
 //---------------------------------------------------------------------------
 std::unique_ptr<PTNode> Parser::parseParameterDeclaration() {

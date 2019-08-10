@@ -29,7 +29,8 @@ std::unique_ptr<Token> Lexer::next() {
                         determineCategory(token, beginningOfToken, i + 1 - beginningOfToken) == -1) {
                         determineCategory(token, beginningOfToken, i - beginningOfToken);
                         currentPos = i;
-                        return std::make_unique<Token>(token);
+                        std::unique_ptr<Token> res = std::make_unique<Token>(token);
+                        return res;
                     }
                     i++;
                 }
