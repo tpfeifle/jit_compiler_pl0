@@ -2,7 +2,7 @@
 #include <pljit/function/pljit.hpp>
 
 //---------------------------------------------------------------------------
-using namespace pljit::function;
+using namespace pljit_function;
 //---------------------------------------------------------------------------
 int main() {
     Pljit jit; // Create an object that manages just-in-time

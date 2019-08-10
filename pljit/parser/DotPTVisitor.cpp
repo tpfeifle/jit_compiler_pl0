@@ -1,7 +1,7 @@
 #include "DotPTVisitor.hpp"
 #include "PTNode.hpp"
 //---------------------------------------------------------------------------
-namespace pljit::parser {
+namespace pljit_parser {
 //---------------------------------------------------------------------------
 std::string DotPTVisitor::nodeTypeToString(PTNode::Type type) {
     std::string label;
@@ -89,5 +89,5 @@ void DotPTVisitor::visit(NonTerminalPTNode& node) {
     }
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::parser
+} // namespace pljit_parser
 //---------------------------------------------------------------------------

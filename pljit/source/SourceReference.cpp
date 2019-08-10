@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string_view>
 //---------------------------------------------------------------------------
-namespace pljit::source {
+namespace pljit_source {
 //---------------------------------------------------------------------------
 // TODO: maybe use offset instead of lineNum, charPos
 SourceReference::SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code) : code(code), lineNum(lineNum),
@@ -27,5 +27,5 @@ std::string SourceReference::getText() {
     return line.substr(charPos, length);
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::source
+} // namespace pljit_source
 //---------------------------------------------------------------------------

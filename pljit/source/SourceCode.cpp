@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 //---------------------------------------------------------------------------
-namespace pljit::source {
+namespace pljit_source {
 //---------------------------------------------------------------------------
 int SourceCode::readCode() {
     std::ifstream in(filename.c_str()); // TODO use OS specific function instead
@@ -50,5 +50,5 @@ unsigned SourceCode::numberOfLines() {
     return codeLines.size();
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::source
+} // namespace pljit_source
 //---------------------------------------------------------------------------

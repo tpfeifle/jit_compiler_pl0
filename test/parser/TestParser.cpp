@@ -4,24 +4,24 @@
 #include <pljit/parser/DotPTVisitor.hpp>
 #include <pljit/ast/ASTNode.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit::lexer;
-using namespace pljit::parser;
+using namespace pljit_lexer;
+using namespace pljit_parser;
 using namespace pljit;
 using PTT = PTNode::Type;
 using namespace std;
 //---------------------------------------------------------------------------
 
 unique_ptr<NonTerminalPTNode> getParseTree(const vector<string>& codeText) {
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     return pt;
 }
 
-std::string getDotOutput(const std::unique_ptr<parser::NonTerminalPTNode>& pt) {
+std::string getDotOutput(const std::unique_ptr<pljit_parser::NonTerminalPTNode>& pt) {
     testing::internal::CaptureStdout();
-    parser::DotPTVisitor visitor = parser::DotPTVisitor();
+    pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
     visitor.visit(*pt);
     return testing::internal::GetCapturedStdout();
 }

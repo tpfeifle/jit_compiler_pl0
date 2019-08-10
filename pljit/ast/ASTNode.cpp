@@ -1,23 +1,23 @@
 #include "ASTNode.hpp"
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 ASTNode::Type ASTNode::getType() const {
     return type;
 }
 //---------------------------------------------------------------------------
-int64_t FunctionAST::execute(ir::Evaluate& evaluate) {
+int64_t FunctionAST::execute(pljit_ir::Evaluate& evaluate) {
     for (auto&& child: children) {
         child->execute(evaluate);
     }
     return evaluate.variables.at("Return");
 }
 //---------------------------------------------------------------------------
-int64_t LiteralAST::execute(ir::Evaluate&) {
+int64_t LiteralAST::execute(pljit_ir::Evaluate&) {
     return value;
 }
 //---------------------------------------------------------------------------
-int64_t UnaryAST::execute(ir::Evaluate& evaluate) {
+int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate) {
     if (sign == SignType::Plus) {
         return child->execute(evaluate);
     } else {
@@ -25,22 +25,22 @@ int64_t UnaryAST::execute(ir::Evaluate& evaluate) {
     }
 }
 //---------------------------------------------------------------------------
-int64_t IdentifierAST::execute(ir::Evaluate& evaluate) {
+int64_t IdentifierAST::execute(pljit_ir::Evaluate& evaluate) {
     return evaluate.variables.at(identifier); // TODO
 }
 //---------------------------------------------------------------------------
 
-int64_t AssignmentAST::execute(ir::Evaluate& evaluate) {
+int64_t AssignmentAST::execute(pljit_ir::Evaluate& evaluate) {
     evaluate.variables[identifier->identifier] = expression->execute(evaluate);
     return 0; // TODO not needed
 }
 //---------------------------------------------------------------------------
-int64_t ReturnStatementAST::execute(ir::Evaluate& evaluate) {
+int64_t ReturnStatementAST::execute(pljit_ir::Evaluate& evaluate) {
     evaluate.variables.insert({"Return", expression->execute(evaluate)});
     return 0; // TODO: actually not really needed
 }
 //---------------------------------------------------------------------------
-int64_t BinaryOperationAST::execute(ir::Evaluate& evaluate) {
+int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate) {
     switch (type) {
         case OperationType::Plus:
             return left->execute(evaluate) + right->execute(evaluate);
@@ -88,5 +88,5 @@ void BinaryOperationAST::accept(ASTVisitor& v) {
     v.visit(*this);
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

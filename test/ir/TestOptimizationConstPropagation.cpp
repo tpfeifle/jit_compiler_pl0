@@ -7,12 +7,12 @@
 #include <pljit/ast/DotASTVisitor.hpp>
 #include <pljit/ir/OptimizeConstPropagation.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit::ast;
+using namespace pljit_ast;
 using namespace std;
-using namespace pljit::lexer;
-using namespace pljit::parser;
+using namespace pljit_lexer;
+using namespace pljit_parser;
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 string getDotOutput3(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
     testing::internal::CaptureStdout();
@@ -28,7 +28,7 @@ TEST(Ir, TestConstPropagation) {
                                "    foo := 12 * temp;\n",
                                "    RETURN loft + ( 1 + 2)\n",
                                "END.\n"};
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -39,11 +39,11 @@ TEST(Ir, TestConstPropagation) {
     unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
     std::unordered_map<std::string, int> constValues{};
     for(const auto& el: ast.symbolTable) {
-        if(el.second.first.type == ast::Symbol::Type::Const) {
+        if(el.second.first.type == pljit_ast::Symbol::Type::Const) {
             constValues.insert({el.first, el.second.first.value});
         }
     }
-    pljit::ir::OptimizeConstPropagation optConstPropagation = pljit::ir::OptimizeConstPropagation(constValues);
+    pljit_pljit_ir::OptimizeConstPropagation optConstPropagation = pljit_pljit_ir::OptimizeConstPropagation(constValues);
     optConstPropagation.visit(*astRoot);
     string output = getDotOutput3(astRoot);
 
@@ -65,5 +65,5 @@ TEST(Ir, TestConstPropagation) {
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

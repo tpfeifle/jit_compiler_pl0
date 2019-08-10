@@ -2,7 +2,7 @@
 //---------------------------------------------------------------------------
 #include "ASTNode.hpp"
 
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 /// A visitor for the abstract syntax tree outputting the tree in dot formmat
 struct DotASTVisitor : public ASTVisitor {
@@ -19,5 +19,5 @@ public:
 
 };
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

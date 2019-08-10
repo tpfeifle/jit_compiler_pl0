@@ -1,6 +1,6 @@
 #include "PTNode.hpp"
 //---------------------------------------------------------------------------
-namespace pljit::parser {
+namespace pljit_parser {
 //---------------------------------------------------------------------------
 PTNode::Type PTNode::getType() const {
     return type;
@@ -34,5 +34,5 @@ void NonTerminalPTNode::accept(PTVisitor& v) {
     return children;
 }*/
 //---------------------------------------------------------------------------
-} // namespace pljit::parser
+} // namespace pljit_parser
 //---------------------------------------------------------------------------

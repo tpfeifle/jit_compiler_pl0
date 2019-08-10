@@ -2,7 +2,7 @@
 #include "DotASTVisitor.hpp"
 
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 void DotASTVisitor::visit(FunctionAST& node) {
     std::cout << "AST" << node_count << "[label=\"Function\"];" << std::endl;
@@ -74,5 +74,5 @@ void DotASTVisitor::visit(LiteralAST& node) {
     std::cout << "AST" << node_count << "[label=\" " << node.value << " \"];" << std::endl;
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

@@ -1,13 +1,10 @@
 #include "Parser.hpp"
-#include "../lexer/Token.hpp"
-#include <stdlib.h>
-#include <inttypes.h>
 
 //---------------------------------------------------------------------------
 using namespace std;
-using namespace pljit::lexer;
+using namespace pljit_lexer;
 //---------------------------------------------------------------------------
-namespace pljit::parser {
+namespace pljit_parser {
 //---------------------------------------------------------------------------
 unsigned lengthOfChildren(const vector<unique_ptr<PTNode>>& children) {
     unsigned length = 0;
@@ -17,9 +14,9 @@ unsigned lengthOfChildren(const vector<unique_ptr<PTNode>>& children) {
     return length;
 }
 //---------------------------------------------------------------------------
-source::SourceReference Parser::childrenSourceReference(const vector<unique_ptr<PTNode>>& children) {
+pljit_source::SourceReference Parser::childrenSourceReference(const vector<unique_ptr<PTNode>>& children) {
     unsigned length = lengthOfChildren(children);
-    return source::SourceReference(children[0]->source.lineNum, children[0]->source.charPos, length, lexer.code);
+    return pljit_source::SourceReference(children[0]->source.lineNum, children[0]->source.charPos, length, lexer.code);
 }
 //---------------------------------------------------------------------------
 unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition() {
@@ -38,10 +35,10 @@ unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition() {
     }
 
     vector<unique_ptr<PTNode>> children;
-    if (paramDeclaration != nullptr) {
+    if (paramDeclaration) {
         children.emplace_back(move(paramDeclaration));
     }
-    if (varDeclaration != nullptr) {
+    if (varDeclaration) {
         children.emplace_back(move(varDeclaration));
     }
     if (constDeclaration) {
@@ -444,5 +441,5 @@ unique_ptr<PTNode> Parser::parsePrimaryExpr() {
                                                      move(children));
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::parser
+} // namespace pljit_parser
 //---------------------------------------------------------------------------

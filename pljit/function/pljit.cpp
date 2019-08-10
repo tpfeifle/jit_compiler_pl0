@@ -2,17 +2,17 @@
 #include "pljit.hpp"
 
 //---------------------------------------------------------------------------
-namespace pljit::function {
+namespace pljit_function {
 //---------------------------------------------------------------------------
 FunctionHandle Pljit::registerFunction(std::vector<std::string> codeText) {
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(std::move(codeText));
     return FunctionHandle(code);
 }
 //---------------------------------------------------------------------------
 void FunctionHandle::compile() {
-    lexer::Lexer lexer = lexer::Lexer(code);
-    parser::Parser parser = parser::Parser(lexer);
-    std::shared_ptr<parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
+    pljit_parser::Parser parser = pljit_parser::Parser(lexer);
+    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         std::cout << "Parser failed" << std::endl;
         return;
@@ -23,17 +23,17 @@ void FunctionHandle::compile() {
         return;
     }
 
-    ir::OptimizeDeadCode optimizeDeadCode = ir::OptimizeDeadCode();
+    pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
     optimizeDeadCode.visit(*astRoot);
 
     std::unordered_map<std::string, int> constValues{};
     for (const auto& el: ast.symbolTable) {
-        if (el.second.first.type == ast::Symbol::Type::Const) {
+        if (el.second.first.type == pljit_ast::Symbol::Type::Const) {
             constValues.insert({el.first, el.second.first.value});
         }
     }
-    ir::OptimizeConstPropagation optimizeConstPropagation = ir::OptimizeConstPropagation(constValues);
+    pljit_ir::OptimizeConstPropagation optimizeConstPropagation = pljit_ir::OptimizeConstPropagation(constValues);
     optimizeConstPropagation.visit(*astRoot);
 }
-} // namespace pljit::function
+} // namespace pljit_function
 //---------------------------------------------------------------------------

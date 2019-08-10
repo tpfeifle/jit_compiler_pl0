@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <pljit/ir/Evaluate.hpp>
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 struct FunctionAST;
 
@@ -50,7 +50,7 @@ public:
 
     explicit ASTNode(const Type type) : type(type) {}
 
-    virtual int64_t execute(ir::Evaluate& evaluate) = 0;
+    virtual int64_t execute(pljit_ir::Evaluate& evaluate) = 0;
 
     [[nodiscard]] Type getType() const; // adding zero means it is a "pure function"
 
@@ -62,10 +62,12 @@ private:
 
 struct StatementAST : public ASTNode {
     explicit StatementAST(Type type) : ASTNode(type) {};
+    ~StatementAST() override = default;
 };
 
 struct ExpressionAST : ASTNode {
     explicit ExpressionAST(const Type type) : ASTNode(type) {};
+    ~ExpressionAST() override = default;
 };
 
 //---------------------------------------------------------------------------
@@ -76,7 +78,7 @@ struct FunctionAST : ASTNode {
                                                                            children(std::move(children)) {};
 
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -85,7 +87,7 @@ struct LiteralAST : ExpressionAST { // TODO: Idea use "LiteralAST : ASTNode" and
 
     explicit LiteralAST(int64_t value) : ExpressionAST(ASTNode::Type::LiteralExpression), value(value) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -100,7 +102,7 @@ struct UnaryAST : ExpressionAST {
     explicit UnaryAST(std::unique_ptr<ASTNode> child, SignType sign)
             : ExpressionAST(Type::UnaryExpression), child(std::move(child)), sign(sign) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -110,7 +112,7 @@ struct IdentifierAST : ExpressionAST {
     explicit IdentifierAST(std::string identifier) : ExpressionAST(Type::IdentifierExpression),
                                                      identifier(std::move(identifier)) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 //---------------------------------------------------------------------------
 struct BinaryOperationAST : ExpressionAST {
@@ -129,7 +131,7 @@ struct BinaryOperationAST : ExpressionAST {
     explicit BinaryOperationAST(std::unique_ptr<ASTNode> left, OperationType type, std::unique_ptr<ASTNode> right)
             : ExpressionAST(Type::BinaryExpression), left(std::move(left)), right(std::move(right)), type(type) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 //---------------------------------------------------------------------------
 struct AssignmentAST : public StatementAST {
@@ -140,7 +142,7 @@ struct AssignmentAST : public StatementAST {
             : StatementAST(Type::AssignmentStatement), identifier(std::move(identifier)),
               expression(std::move(expression)) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -150,8 +152,8 @@ struct ReturnStatementAST : StatementAST {
     explicit ReturnStatementAST(std::unique_ptr<ASTNode> expression)
             : StatementAST(Type::ReturnStatement), expression(std::move(expression)) {};
     void accept(ASTVisitor& v) override;
-    int64_t execute(ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::Evaluate& evaluate) override;
 };
 //---------------------------------------------------------------------------
-}  // namespace pljit::ast
+}  // namespace pljit_ast
 //---------------------------------------------------------------------------

@@ -2,24 +2,24 @@
 #include <iterator>
 #include <vector>
 //---------------------------------------------------------------------------
-namespace pljit::ir {
+namespace pljit_ir {
 //---------------------------------------------------------------------------
 using namespace std;
-void OptimizeDeadCode::visit(ast::FunctionAST& functionAst) {
-    vector<unique_ptr<ast::ASTNode>>::iterator it;
+void OptimizeDeadCode::visit(pljit_ast::FunctionAST& functionAst) {
+    vector<unique_ptr<pljit_ast::ASTNode>>::iterator it;
     for (it = functionAst.children.begin(); it < functionAst.children.end(); it++) {
-        auto statement = static_cast<ast::StatementAST*>(it->get());
-        if (statement->getType() == ast::ASTNode::Type::ReturnStatement) {
+        auto statement = static_cast<pljit_ast::StatementAST*>(it->get());
+        if (statement->getType() == pljit_ast::ASTNode::Type::ReturnStatement) {
             functionAst.children.erase(it + 1, functionAst.children.end());
         }
     }
 }
-void OptimizeDeadCode::visit(ast::AssignmentAST&) {}
-void OptimizeDeadCode::visit(ast::ReturnStatementAST&) {}
-void OptimizeDeadCode::visit(ast::BinaryOperationAST&) {}
-void OptimizeDeadCode::visit(ast::UnaryAST&) {}
-void OptimizeDeadCode::visit(ast::LiteralAST&) {}
-void OptimizeDeadCode::visit(ast::IdentifierAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::AssignmentAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::ReturnStatementAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::BinaryOperationAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::UnaryAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::LiteralAST&) {}
+void OptimizeDeadCode::visit(pljit_ast::IdentifierAST&) {}
 //---------------------------------------------------------------------------
-} // namespace ir
+} // namespace pljit_ir
 //---------------------------------------------------------------------------

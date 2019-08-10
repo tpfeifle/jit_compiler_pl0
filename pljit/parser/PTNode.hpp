@@ -5,7 +5,7 @@
 #include <pljit/source/SourceReference.hpp>
 #include "iostream"
 //---------------------------------------------------------------------------
-namespace pljit::parser {
+namespace pljit_parser {
 //---------------------------------------------------------------------------
 struct LiteralPTNode;
 struct IdentifierPTNode;
@@ -47,11 +47,11 @@ public:
     };
 
 
-    source::SourceReference source;
+    pljit_source::SourceReference source;
 
     virtual void accept(PTVisitor& v) = 0;
 
-    explicit PTNode(const Type type, source::SourceReference source) : source(std::move(source)), type(type) {}
+    explicit PTNode(const Type type, pljit_source::SourceReference source) : source(std::move(source)), type(type) {}
 
     virtual ~PTNode() = default; //public virtual destructor
     // TODO: Check if the following required for all derived classes
@@ -64,27 +64,30 @@ private:
 };
 
 struct LiteralPTNode : public PTNode {
-    explicit LiteralPTNode(source::SourceReference source, int64_t value) : PTNode(PTNode::Type::Literal, std::move(source)),
+    explicit LiteralPTNode(pljit_source::SourceReference source, int64_t value) : PTNode(PTNode::Type::Literal, std::move(source)),
                                                                 value(value) {};
     void accept(PTVisitor& v) override;
     [[nodiscard]] int64_t getValue() const;
+    ~LiteralPTNode() override = default;
 private:
     int64_t value;
 };
 
 struct IdentifierPTNode : public PTNode {
-    explicit IdentifierPTNode(source::SourceReference source) : PTNode(PTNode::Type::Identifier, std::move(source)) {};
+    explicit IdentifierPTNode(pljit_source::SourceReference source) : PTNode(PTNode::Type::Identifier, std::move(source)) {};
 
     std::string getName() {
         return source.getText();
     }
     void accept(PTVisitor& v) override;
+    ~IdentifierPTNode() override = default;
 };
 
 struct GenericTokenPTNode : public PTNode {
 public:
-    explicit GenericTokenPTNode(source::SourceReference source) : PTNode(PTNode::Type::GenericToken, std::move(source)) {};
+    explicit GenericTokenPTNode(pljit_source::SourceReference source) : PTNode(PTNode::Type::GenericToken, std::move(source)) {};
     void accept(PTVisitor& v) override;
+    ~GenericTokenPTNode() override = default;
 };
 
 struct OperatorAlternationPTNode : public GenericTokenPTNode {
@@ -94,22 +97,24 @@ struct OperatorAlternationPTNode : public GenericTokenPTNode {
         Multiply,
         Divide
     };
-    explicit OperatorAlternationPTNode(source::SourceReference source, OperatorType operatorType) : GenericTokenPTNode(
+    explicit OperatorAlternationPTNode(pljit_source::SourceReference source, OperatorType operatorType) : GenericTokenPTNode(
             std::move(source)), operatorType(operatorType) {};
     [[nodiscard]] OperatorType getOperatorType() const;
+    ~OperatorAlternationPTNode() override = default;
 private:
     OperatorType operatorType;
 };
 
 struct NonTerminalPTNode : public PTNode {
 
-    explicit NonTerminalPTNode(source::SourceReference source, PTNode::Type type, std::vector<std::unique_ptr<PTNode>> children)
+    explicit NonTerminalPTNode(pljit_source::SourceReference source, PTNode::Type type, std::vector<std::unique_ptr<PTNode>> children)
             : PTNode(type, std::move(source)), children(std::move(children)) {};
     void accept(PTVisitor& v) override;
     // [[nodiscard]] std::vector<std::unique_ptr<PTNode>> getChildren() const;
     std::vector<std::unique_ptr<PTNode>> children;
+    ~NonTerminalPTNode() override = default;
 };
 
 //---------------------------------------------------------------------------
-} //namespace pljit::parser
+} //namespace pljit_parser
 //---------------------------------------------------------------------------

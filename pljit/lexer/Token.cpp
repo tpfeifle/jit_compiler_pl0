@@ -1,11 +1,11 @@
 #include "../source/SourceReference.hpp"
 #include "../lexer/Token.hpp"
 //---------------------------------------------------------------------------
-namespace pljit::lexer {
+namespace pljit_lexer {
 //---------------------------------------------------------------------------
 Token::Type Token::getType() const {
     return type;
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::lexer
+} // namespace pljit_lexer
 //---------------------------------------------------------------------------

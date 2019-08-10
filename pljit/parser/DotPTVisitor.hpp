@@ -2,7 +2,7 @@
 
 #include "PTNode.hpp"
 //---------------------------------------------------------------------------
-namespace pljit::parser {
+namespace pljit_parser {
 class DotPTVisitor : public PTVisitor {
     std::string nodeTypeToString(PTNode::Type type);
     unsigned node_count = 0;
@@ -14,5 +14,5 @@ public:
     void visit(NonTerminalPTNode& node) override;
 };
 //---------------------------------------------------------------------------
-} // namespace pljit::parser
+} // namespace pljit_parser
 //---------------------------------------------------------------------------

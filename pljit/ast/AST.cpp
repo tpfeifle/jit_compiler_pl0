@@ -2,9 +2,9 @@
 #include <unordered_map>
 //---------------------------------------------------------------------------
 using namespace std;
-using namespace pljit::parser;
+using namespace pljit_parser;
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
 // analyze the ParseTree: This is the starting-point for the analysis
@@ -56,7 +56,6 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
     if (!hasReturn) {
         cerr << "Function has no return statement" << endl;
     }
-
     return make_unique<FunctionAST>(move(children));
 }
 //---------------------------------------------------------------------------
@@ -202,5 +201,5 @@ unique_ptr<ExpressionAST> AST::analyzeMultiplicativeExpression(NonTerminalPTNode
     return left; // only unary-expression
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

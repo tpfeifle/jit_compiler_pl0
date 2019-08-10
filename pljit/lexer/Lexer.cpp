@@ -4,7 +4,7 @@
 #include <string_view>
 #include <iostream>
 //---------------------------------------------------------------------------
-namespace pljit::lexer {
+namespace pljit_lexer {
 //---------------------------------------------------------------------------
 std::unique_ptr<Token> Lexer::next() {
     while (currentLine < code.numberOfLines()) {
@@ -12,7 +12,7 @@ std::unique_ptr<Token> Lexer::next() {
         unsigned beginningOfToken = 0;
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
-                Token token = Token(source::SourceReference(0, 0, 1, code),
+                Token token = Token(pljit_source::SourceReference(0, 0, 1, code),
                                               Token::Type::Plus); // TODO: this feels stupid to use as a placeholder
 
                 if (determineCategory(token, i, 1) == -1) {
@@ -47,7 +47,7 @@ std::unique_ptr<Token> Lexer::next() {
 //---------------------------------------------------------------------------
 int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     char firstChar = code.getCharacter(currentLine, start);
-    source::SourceReference source = source::SourceReference(currentLine, start, length, code);
+    pljit_source::SourceReference source = pljit_source::SourceReference(currentLine, start, length, code);
     if (firstChar == '+' && length == 1) {
         token = Token(source, Token::Type::Plus);
     } else if (firstChar == '-' && length == 1) {
@@ -109,5 +109,5 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     return 1;
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::lexer
+} // namespace pljit_lexer
 //---------------------------------------------------------------------------

@@ -9,24 +9,24 @@
 #include "Symbol.hpp"
 #include "ASTNode.hpp"
 
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 class AST {
-    std::unique_ptr<StatementAST> analyzeStatement(parser::NonTerminalPTNode* node);
+    std::unique_ptr<StatementAST> analyzeStatement(pljit_parser::NonTerminalPTNode* node);
 
-    std::unique_ptr<ExpressionAST> analyzeAdditiveExpression(parser::NonTerminalPTNode* node);
+    std::unique_ptr<ExpressionAST> analyzeAdditiveExpression(pljit_parser::NonTerminalPTNode* node);
 
-    std::unique_ptr<ExpressionAST> analyzeMultiplicativeExpression(parser::NonTerminalPTNode* node);
+    std::unique_ptr<ExpressionAST> analyzeMultiplicativeExpression(pljit_parser::NonTerminalPTNode* node);
 
-    void analyzeDeclarations(parser::NonTerminalPTNode* node, Symbol::Type type);
+    void analyzeDeclarations(pljit_parser::NonTerminalPTNode* node, Symbol::Type type);
 
-    void analyzeConstDeclarations(parser::NonTerminalPTNode* node, Symbol::Type type);
+    void analyzeConstDeclarations(pljit_parser::NonTerminalPTNode* node, Symbol::Type type);
 
 public:
 
-    std::unique_ptr<FunctionAST> analyzeParseTree(const std::shared_ptr<parser::PTNode>& root);
+    std::unique_ptr<FunctionAST> analyzeParseTree(const std::shared_ptr<pljit_parser::PTNode>& root);
     unsigned currentSymbolId = 0;
     std::unordered_map<std::string, std::pair<Symbol, unsigned>> symbolTable{};
 };
 //---------------------------------------------------------------------------
-} //namespace pljit::ast
+} //namespace pljit_ast

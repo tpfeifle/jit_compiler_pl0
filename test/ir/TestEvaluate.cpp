@@ -2,13 +2,13 @@
 #include <vector>
 #include <pljit/function/pljit.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit::ast;
+using namespace pljit_ast;
 using namespace std;
-using namespace pljit::function;
-using namespace pljit::lexer;
-using namespace pljit::parser;
+using namespace pljit_function;
+using namespace pljit_lexer;
+using namespace pljit_parser;
 //---------------------------------------------------------------------------
-namespace pljit::function {
+namespace pljit_function {
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestSimpleReturn) {
     Pljit jit;
@@ -58,5 +58,5 @@ TEST(Evaluate, TestParameters) {
     assert(result == 192);
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

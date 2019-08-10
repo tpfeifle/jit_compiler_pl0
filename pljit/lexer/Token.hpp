@@ -3,7 +3,7 @@
 #include <optional>
 #include <pljit/source/SourceReference.hpp>
 //---------------------------------------------------------------------------
-namespace pljit::lexer {
+namespace pljit_lexer {
 //---------------------------------------------------------------------------
 class Token {
 public:
@@ -30,7 +30,7 @@ public:
         NOT_USED //TODO
     };
 
-    Token(source::SourceReference source, const Type type) : source(std::move(source)), type(type) {}
+    Token(pljit_source::SourceReference source, const Type type) : source(std::move(source)), type(type) {}
     Token(const Token& token) = default;
     Token(Token&& token) = default;
 
@@ -38,10 +38,10 @@ public:
     [[nodiscard]] Token::Type getType() const;
 
     // virtual ~Token() = default; // public virtual destructor
-    source::SourceReference source;
+    pljit_source::SourceReference source;
 private:
     Type type;
 };
 //---------------------------------------------------------------------------
-} // namespace pljit::lexer
+} // namespace pljit_lexer
 //---------------------------------------------------------------------------

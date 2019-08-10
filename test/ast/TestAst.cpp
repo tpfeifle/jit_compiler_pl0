@@ -6,15 +6,15 @@
 #include <pljit/parser/DotPTVisitor.hpp>
 #include <pljit/ast/DotASTVisitor.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit::ast;
+using namespace pljit_ast;
 using namespace std;
-using namespace pljit::lexer;
-using namespace pljit::parser;
+using namespace pljit_lexer;
+using namespace pljit_parser;
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 unique_ptr<FunctionAST> getAstRoot(const vector<string>& codeText) {
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -62,7 +62,7 @@ TEST(Ast, TestSymbolTable) {
                                "BEGIN\n",
                                "    RETURN 12 * (3 - 2)\n",
                                "END.\n"};
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -153,5 +153,5 @@ TEST(Ast, TestMissingReturnStatement) {
 
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------

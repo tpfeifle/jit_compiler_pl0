@@ -7,15 +7,15 @@
 #include <pljit/ast/DotASTVisitor.hpp>
 #include <pljit/ir/OptimizeDeadCode.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit::ast;
+using namespace pljit_ast;
 using namespace std;
-using namespace pljit::lexer;
-using namespace pljit::parser;
+using namespace pljit_lexer;
+using namespace pljit_parser;
 //---------------------------------------------------------------------------
-namespace pljit::ast {
+namespace pljit_ast {
 //---------------------------------------------------------------------------
 unique_ptr<FunctionAST> getAstRoot2(const vector<string>& codeText) { // TODO fix linker error correctly
-    source::SourceCode code = source::SourceCode(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -41,7 +41,7 @@ TEST(Ir, TestDeadCode) {
                                "    foo := 12\n",
                                "END.\n"};
     auto astRoot = getAstRoot2(codeText);
-    pljit::ir::OptimizeDeadCode optimizeDeadCode = pljit::ir::OptimizeDeadCode();
+    pljit_pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_pljit_ir::OptimizeDeadCode();
     optimizeDeadCode.visit(*astRoot);
     string output = getDotOutput2(astRoot);
     string expectedOutput = "AST0[label=\"Function\"];\n"
@@ -52,5 +52,5 @@ TEST(Ir, TestDeadCode) {
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------
-} // namespace pljit::ast
+} // namespace pljit_ast
 //---------------------------------------------------------------------------
