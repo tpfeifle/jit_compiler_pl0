@@ -31,7 +31,7 @@ public:
     };
 
     Token(source::SourceReference source, const Type type) : source(std::move(source)), type(type) {}
-    Token(Token& token) = default;
+    Token(const Token& token) = default;
     Token(Token&& token) = default;
 
     Token& operator=(Token&& other) = default;

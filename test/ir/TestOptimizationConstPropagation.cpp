@@ -21,14 +21,14 @@ string getDotOutput3(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
     return testing::internal::GetCapturedStdout();
 }
 //---------------------------------------------------------------------------
-TEST(Ast, TestConstPropagation) {
+TEST(Ir, TestConstPropagation) {
     vector<string> codeText = {"PARAM foo, loft;\n",
                                "CONST temp = 1200;\n",
                                "BEGIN\n",
                                "    foo := 12 * temp;\n",
                                "    RETURN loft + ( 1 + 2)\n",
                                "END.\n"};
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -46,21 +46,22 @@ TEST(Ast, TestConstPropagation) {
     pljit::ir::OptimizeConstPropagation optConstPropagation = pljit::ir::OptimizeConstPropagation(constValues);
     optConstPropagation.visit(*astRoot);
     string output = getDotOutput3(astRoot);
-    string expectedOutput = "AST11[label=\"Function\"];\n"
-                            "AST11 -> AST12\n"
-                            "AST12[label=\"Assignment\"];\n"
-                            "AST12 -> AST13\n"
-                            "AST13[label=\" foo \"];\n"
-                            "AST12 -> AST14\n"
-                            "AST14[label=\" 14400 \"];\n"
-                            "AST11 -> AST15\n"
-                            "AST15[label=\"Return\"];\n"
-                            "AST15 -> AST16\n"
-                            "AST16[label=\"+\"];\n"
-                            "AST16 -> AST17\n"
-                            "AST17[label=\" loft \"];\n"
-                            "AST16 -> AST18\n"
-                            "AST18[label=\" 3 \"];\n";
+
+    string expectedOutput = "AST0[label=\"Function\"];\n"
+                            "AST0 -> AST1\n"
+                            "AST1[label=\"Assignment\"];\n"
+                            "AST1 -> AST2\n"
+                            "AST2[label=\" foo \"];\n"
+                            "AST1 -> AST3\n"
+                            "AST3[label=\" 14400 \"];\n"
+                            "AST0 -> AST4\n"
+                            "AST4[label=\"Return\"];\n"
+                            "AST4 -> AST5\n"
+                            "AST5[label=\"+\"];\n"
+                            "AST5 -> AST6\n"
+                            "AST6[label=\" loft \"];\n"
+                            "AST5 -> AST7\n"
+                            "AST7[label=\" 3 \"];\n";
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------

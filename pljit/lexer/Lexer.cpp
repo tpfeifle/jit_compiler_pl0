@@ -41,7 +41,7 @@ std::unique_ptr<Token> Lexer::next() {
         currentLine++;
         currentPos = 0;
     }
-    std::cout << "why am I even here -.- (Lexer)" << std::endl;
+    // std::cout << "why am I even here -.- (Lexer)" << std::endl;
     return nullptr;
 }
 //---------------------------------------------------------------------------

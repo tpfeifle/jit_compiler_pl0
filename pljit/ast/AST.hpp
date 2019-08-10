@@ -4,11 +4,10 @@
 
 #include <vector>
 #include <unordered_map>
-#include "../source/SourceReference.hpp"
-#include "../parser/PTNode.hpp"
+#include <pljit/parser/PTNode.hpp>
 #include "iostream"
-#include "ASTNode.hpp"
 #include "Symbol.hpp"
+#include "ASTNode.hpp"
 
 namespace pljit::ast {
 //---------------------------------------------------------------------------

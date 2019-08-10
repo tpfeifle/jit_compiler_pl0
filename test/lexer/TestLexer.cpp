@@ -1,9 +1,8 @@
 #include "../../pljit/lexer/Lexer.hpp"
+#include <pljit/source/SourceReference.hpp>
 #include <gtest/gtest.h>
 #include <vector>
 //---------------------------------------------------------------------------
-using namespace pljit::lexer;
-using TT = Token::Type;
 // using namespace lexer;
 //---------------------------------------------------------------------------
 /*namespace {
@@ -15,13 +14,16 @@ using TT = Token::Type;
     };
 //---------------------------------------------------------------------------
 } // namespace */
+namespace pljit::lexer {
+using TT = Token::Type;
+
 //---------------------------------------------------------------------------
 TEST(Lexer, TestParametersAll) {
     std::vector<std::string> codeText = {"PARAM width, height, depth;",
                                          "VAR volume;",
                                          "CONST foo = 12;"};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
 
@@ -42,7 +44,7 @@ TEST(Lexer, TestParametersNoVar) {
     std::vector<std::string> codeText = {"PARAM width, height, depth;",
                                          "CONST volume = 1, foo = 20;"};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
     std::vector<TT> expectedTypes = {TT::Param, TT::Identifier, TT::Colon, TT::Identifier, TT::Colon, TT::Identifier,
@@ -56,7 +58,7 @@ TEST(Lexer, TestParametersNoVar) {
 TEST(Lexer, TestParametersNoVarNoParam) {
     std::vector<std::string> codeText = {"CONST volume = 1, foo = 20;"};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
     std::vector<TT> expectedTypes = {TT::Const, TT::Identifier, TT::Equal, TT::Literal, TT::Colon,
@@ -69,7 +71,7 @@ TEST(Lexer, TestParametersNoVarNoParam) {
 TEST(Lexer, TestSimpleStatement) {
     std::vector<std::string> codeText = {"foo := 200 * (10 + 12);"};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
     std::vector<TT> expectedTypes = {TT::Identifier, TT::Assignment, TT::Literal, TT::Multiply,
@@ -83,7 +85,7 @@ TEST(Lexer, TestSimpleStatement) {
 TEST(Lexer, TestComplexStatement) {
     std::vector<std::string> codeText = {"foo := a*1+1234a-12 *3b;"};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
     std::vector<TT> expectedTypes = {TT::Identifier, TT::Assignment, TT::Identifier, TT::Multiply,
@@ -103,7 +105,7 @@ TEST(Lexer, TestFullProgram) {
                                          "RETURN foo",
                                          "END."};
     // tokenize input
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while (lexer.next()) {}
     std::vector<TT> expectedTypes = {TT::Param, TT::Identifier, TT::Semicolon,
@@ -119,7 +121,7 @@ TEST(Lexer, TestFullProgram) {
 
 TEST(Lexer, TestExpectError) {
     std::vector<std::string> codeText = {"PARAM? width;"};
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     testing::internal::CaptureStderr();
     while (lexer.next()) {}
@@ -133,7 +135,7 @@ TEST(Lexer, TestExpectError) {
 
 TEST(Lexer, TestNoWhitespaces) {
     std::vector<std::string> codeText = {"PARAM width,  height,  temp;"};
-    pljit::SourceCode code = pljit::SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     while(lexer.next()) {}
     for (Token token: lexer.tokens) {
@@ -141,4 +143,6 @@ TEST(Lexer, TestNoWhitespaces) {
         assert(std::count_if(text.begin(), text.end(), isspace) == 0);
     }
 }
+//---------------------------------------------------------------------------
+} // namespace pljit::lexer
 //---------------------------------------------------------------------------

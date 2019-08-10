@@ -56,6 +56,7 @@ int64_t BinaryOperationAST::execute(ir::Evaluate& evaluate) {
             }
             return left->execute(evaluate) / temp;
     }
+    return 0; // never happens
 }
 //---------------------------------------------------------------------------
 void FunctionAST::accept(ASTVisitor& v) {

@@ -4,7 +4,7 @@ namespace pljit::parser {
 //---------------------------------------------------------------------------
 PTNode::Type PTNode::getType() const {
     return type;
-};
+}
 //---------------------------------------------------------------------------
 OperatorAlternationPTNode::OperatorType OperatorAlternationPTNode::getOperatorType() const {
     return operatorType;

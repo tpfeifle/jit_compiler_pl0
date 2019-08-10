@@ -12,7 +12,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 unique_ptr<NonTerminalPTNode> getParseTree(const vector<string>& codeText) {
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -26,7 +26,7 @@ std::string getDotOutput(const std::unique_ptr<parser::NonTerminalPTNode>& pt) {
     return testing::internal::GetCapturedStdout();
 }
 
-TEST(Parser, TestInvalidDeclaration) {
+/*TEST(Parser, TestInvalidDeclaration) {
     //TODO TODO
     vector<string> codeText = {"PARAM width, CONST, height, depth;\n",
                                "BEGIN\n",
@@ -40,7 +40,7 @@ TEST(Parser, TestInvalidDeclaration) {
                            "PARAM width, CONST, height, depth;\n *"
                            "             ^~~~~";
     assert(error == expectedError);
-}
+}*/
 
 
 TEST(Parser, TestReturn) {
@@ -74,7 +74,7 @@ TEST(Parser, TestReturn) {
                        "CompoundStatement1 -> GenericToken14\n"
                        "GenericToken14[label=\"END\"];\n"
                        "FunctionDefinition0 -> GenericToken16\n"
-                       "GenericToken16[label=\"a\"];\n";
+                       "GenericToken16[label=\".\"];\n";
     assert(output == expectedDotGraph);
 }
 
@@ -160,28 +160,44 @@ TEST(Parser, TestAllSimple) {
                        "Identifier52[label=\"width\"];\n"
                        "MultiplicativeExpr49 -> GenericToken54\n"
                        "GenericToken54[label=\"*\"];\n"
-                       "StatementList41 -> GenericToken56\n"
-                       "GenericToken56[label=\";\"];\n"
-                       "StatementList41 -> Statement58\n"
-                       "Statement58[label=\"Statement\"];\n"
-                       "Statement58 -> GenericToken59\n"
-                       "GenericToken59[label=\"RETURN\"];\n"
-                       "Statement58 -> AdditiveExpr61\n"
-                       "AdditiveExpr61[label=\"AdditiveExpr\"];\n"
-                       "AdditiveExpr61 -> MultiplicativeExpr62\n"
-                       "MultiplicativeExpr62[label=\"MultiplicativeExpr\"];\n"
-                       "MultiplicativeExpr62 -> UnaryExpr63\n"
-                       "UnaryExpr63[label=\"UnaryExpr\"];\n"
-                       "UnaryExpr63 -> PrimaryExpr64\n"
-                       "PrimaryExpr64[label=\"PrimaryExpr\"];\n"
-                       "PrimaryExpr64 -> Identifier65\n"
-                       "Identifier65[label=\"density\"];\n"
-                       "MultiplicativeExpr62 -> GenericToken67\n"
-                       "GenericToken67[label=\"*\"];\n"
-                       "CompoundStatement38 -> GenericToken69\n"
-                       "GenericToken69[label=\"END\"];\n"
-                       "FunctionDefinition0 -> GenericToken71\n"
-                       "GenericToken71[label=\".\"];\n";
+                       "MultiplicativeExpr49 -> MultiplicativeExpr56\n"
+                       "MultiplicativeExpr56[label=\"MultiplicativeExpr\"];\n"
+                       "MultiplicativeExpr56 -> UnaryExpr57\n"
+                       "UnaryExpr57[label=\"UnaryExpr\"];\n"
+                       "UnaryExpr57 -> PrimaryExpr58\n"
+                       "PrimaryExpr58[label=\"PrimaryExpr\"];\n"
+                       "PrimaryExpr58 -> Identifier59\n"
+                       "Identifier59[label=\"height\"];\n"
+                       "StatementList41 -> GenericToken61\n"
+                       "GenericToken61[label=\";\"];\n"
+                       "StatementList41 -> Statement63\n"
+                       "Statement63[label=\"Statement\"];\n"
+                       "Statement63 -> GenericToken64\n"
+                       "GenericToken64[label=\"RETURN\"];\n"
+                       "Statement63 -> AdditiveExpr66\n"
+                       "AdditiveExpr66[label=\"AdditiveExpr\"];\n"
+                       "AdditiveExpr66 -> MultiplicativeExpr67\n"
+                       "MultiplicativeExpr67[label=\"MultiplicativeExpr\"];\n"
+                       "MultiplicativeExpr67 -> UnaryExpr68\n"
+                       "UnaryExpr68[label=\"UnaryExpr\"];\n"
+                       "UnaryExpr68 -> PrimaryExpr69\n"
+                       "PrimaryExpr69[label=\"PrimaryExpr\"];\n"
+                       "PrimaryExpr69 -> Identifier70\n"
+                       "Identifier70[label=\"density\"];\n"
+                       "MultiplicativeExpr67 -> GenericToken72\n"
+                       "GenericToken72[label=\"*\"];\n"
+                       "MultiplicativeExpr67 -> MultiplicativeExpr74\n"
+                       "MultiplicativeExpr74[label=\"MultiplicativeExpr\"];\n"
+                       "MultiplicativeExpr74 -> UnaryExpr75\n"
+                       "UnaryExpr75[label=\"UnaryExpr\"];\n"
+                       "UnaryExpr75 -> PrimaryExpr76\n"
+                       "PrimaryExpr76[label=\"PrimaryExpr\"];\n"
+                       "PrimaryExpr76 -> Identifier77\n"
+                       "Identifier77[label=\"volume\"];\n"
+                       "CompoundStatement38 -> GenericToken79\n"
+                       "GenericToken79[label=\"END\"];\n"
+                       "FunctionDefinition0 -> GenericToken81\n"
+                       "GenericToken81[label=\".\"];\n";
     assert(output == expectedDotGraph);
 }
 

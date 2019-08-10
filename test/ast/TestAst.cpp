@@ -14,7 +14,7 @@ using namespace pljit::parser;
 namespace pljit::ast {
 //---------------------------------------------------------------------------
 unique_ptr<FunctionAST> getAstRoot(const vector<string>& codeText) {
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -51,7 +51,7 @@ TEST(Ast, TestBrackets) {
                             "AST4 -> AST5\n"
                             "AST5[label=\" 3 \"];\n"
                             "AST4 -> AST6\n"
-                            "AST6[label=\" 2 \"];";
+                            "AST6[label=\" 2 \"];\n";
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ TEST(Ast, TestSymbolTable) {
                                "BEGIN\n",
                                "    RETURN 12 * (3 - 2)\n",
                                "END.\n"};
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -135,7 +135,7 @@ TEST(Ast, TestUsingUnitializedVariable) {
     string error = testing::internal::GetCapturedStderr();
     string expectedError = "2:11:Using an uninitialized identifier\n"
                            "    RETURN foo\n"
-                           "           ^~~";
+                           "           ^~~\n";
     assert(error == expectedError);
 
 }

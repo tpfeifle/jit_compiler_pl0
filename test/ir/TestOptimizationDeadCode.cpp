@@ -15,7 +15,7 @@ using namespace pljit::parser;
 namespace pljit::ast {
 //---------------------------------------------------------------------------
 unique_ptr<FunctionAST> getAstRoot2(const vector<string>& codeText) { // TODO fix linker error correctly
-    SourceCode code = SourceCode(codeText);
+    source::SourceCode code = source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -34,7 +34,7 @@ string getDotOutput2(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
     return testing::internal::GetCapturedStdout();
 }
 //---------------------------------------------------------------------------
-TEST(Ast, TestDeadCode) {
+TEST(Ir, TestDeadCode) {
     vector<string> codeText = {"PARAM foo;\n",
                                "BEGIN\n",
                                "    RETURN 1;\n",
