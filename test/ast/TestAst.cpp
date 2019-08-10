@@ -1,4 +1,4 @@
-#include "../../pljit/ast/AST.hpp"
+#include "pljit/ast/SemanticAnalyzer.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 #include <pljit/lexer/Lexer.hpp>
@@ -21,7 +21,7 @@ unique_ptr<FunctionAST> getAstRoot(const vector<string>& codeText) {
     if(!pt) {
         exit(-1);
     }
-    AST ast = AST();
+    SemanticAnalyzer ast = SemanticAnalyzer();
     unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
     return astRoot;
 }
@@ -67,7 +67,7 @@ TEST(Ast, TestSymbolTable) {
     Parser parser(lexer);
     shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
 
-    AST ast = AST();
+    SemanticAnalyzer ast = SemanticAnalyzer();
     unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
     vector<pair<string, int>> expectedVariables = {{"width",  Symbol::Type::Param},
                                                    {"height", Symbol::Type::Param},

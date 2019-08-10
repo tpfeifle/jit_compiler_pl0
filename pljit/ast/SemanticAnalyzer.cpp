@@ -1,4 +1,4 @@
-#include "AST.hpp"
+#include "SemanticAnalyzer.hpp"
 #include <unordered_map>
 //---------------------------------------------------------------------------
 using namespace std;
@@ -6,7 +6,7 @@ using namespace pljit_parser;
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
+unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(const shared_ptr<PTNode>& root)
 // analyze the ParseTree: This is the starting-point for the analysis
 {
     auto* node = static_cast<NonTerminalPTNode*>(root.get());
@@ -59,7 +59,7 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
     return make_unique<FunctionAST>(move(children));
 }
 //---------------------------------------------------------------------------
-void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
+void SemanticAnalyzer::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     auto* declaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
     for(auto& child: declaratorList->children) {
         if (child->getType() == PTNode::Type::Identifier) {
@@ -69,7 +69,7 @@ void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
             if (symbolTable.find(identifier) == symbolTable.end()) {
                 bool initialize = type == Symbol::Type::Param;
                 Symbol symbol = Symbol(type, child->source, initialize, 0);
-                symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, currentSymbolId++}));
+                symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
             } else {
                 identiferToken->source.printContext(
                         "This identifier is already declared. Duplicate declarations are not allowed");
@@ -79,7 +79,7 @@ void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     }
 }
 //---------------------------------------------------------------------------
-void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
+void SemanticAnalyzer::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     auto* initDeclaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
     for (unsigned long i = 0; i < initDeclaratorList->children.size(); i+=2) {
         auto* initDeclarator = static_cast<NonTerminalPTNode*>(initDeclaratorList->children[i].get());
@@ -89,7 +89,7 @@ void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
         string identifier = identiferToken->getName();
         Symbol symbol = Symbol(type, initDeclarator->children[i]->source, true, literal->getValue());
         if (symbolTable.find(identifier) == symbolTable.end()) {
-            symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, currentSymbolId++}));
+            symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
         } else {
             identiferToken->source.printContext(
                     "This identifier is already declared. Duplicate declarations are not allowed");
@@ -98,7 +98,7 @@ void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<StatementAST> AST::analyzeStatement(NonTerminalPTNode* node) {
+unique_ptr<StatementAST> SemanticAnalyzer::analyzeStatement(NonTerminalPTNode* node) {
     auto* statement = static_cast<NonTerminalPTNode*>(node);
     if (statement->children.size() == 1) {
         auto* assignmentExpr = static_cast<NonTerminalPTNode*>(statement->children[0].get());
@@ -124,7 +124,7 @@ unique_ptr<StatementAST> AST::analyzeStatement(NonTerminalPTNode* node) {
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<ExpressionAST> AST::analyzeAdditiveExpression(NonTerminalPTNode* node) {
+unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeAdditiveExpression(NonTerminalPTNode* node) {
     if (node->children.size() == 1) {
         return analyzeMultiplicativeExpression(static_cast<NonTerminalPTNode*>(node->children[0].get()));
     } else {
@@ -142,7 +142,7 @@ unique_ptr<ExpressionAST> AST::analyzeAdditiveExpression(NonTerminalPTNode* node
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<ExpressionAST> AST::analyzeMultiplicativeExpression(NonTerminalPTNode* node) {
+unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonTerminalPTNode* node) {
     auto* unaryExpr = static_cast<NonTerminalPTNode*>(node->children[0].get());
     unsigned unaryChildIndex = 0;
     if (unaryExpr->children.size() == 2) {

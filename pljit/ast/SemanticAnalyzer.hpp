@@ -11,7 +11,7 @@
 
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-class AST {
+class SemanticAnalyzer {
     std::unique_ptr<StatementAST> analyzeStatement(pljit_parser::NonTerminalPTNode* node);
 
     std::unique_ptr<ExpressionAST> analyzeAdditiveExpression(pljit_parser::NonTerminalPTNode* node);
@@ -25,7 +25,6 @@ class AST {
 public:
 
     std::unique_ptr<FunctionAST> analyzeParseTree(const std::shared_ptr<pljit_parser::PTNode>& root);
-    unsigned currentSymbolId = 0;
     std::unordered_map<std::string, std::pair<Symbol, unsigned>> symbolTable{};
 };
 //---------------------------------------------------------------------------

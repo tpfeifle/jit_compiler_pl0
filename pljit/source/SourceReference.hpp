@@ -10,7 +10,7 @@ class SourceReference {
 public:
     SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code);
 
-    void printContext(const std::string& message);
+    void printContext(std::string_view message);
     std::string getText();
     unsigned lineNum;
     unsigned charPos;

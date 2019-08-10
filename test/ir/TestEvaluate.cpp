@@ -2,12 +2,6 @@
 #include <vector>
 #include <pljit/function/pljit.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit_ast;
-using namespace std;
-using namespace pljit_function;
-using namespace pljit_lexer;
-using namespace pljit_parser;
-//---------------------------------------------------------------------------
 namespace pljit_function {
 //---------------------------------------------------------------------------
 TEST(Evaluate, TestSimpleReturn) {

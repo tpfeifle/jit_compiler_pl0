@@ -12,9 +12,6 @@ public:
 
     std::string getLine(unsigned index);
     char getCharacter(unsigned line, unsigned offset);
-    char getNextCharacter(unsigned line, unsigned offset);
-
-    int readCode();
 
     unsigned numberOfLines();
 

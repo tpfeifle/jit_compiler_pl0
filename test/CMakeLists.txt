@@ -1,6 +1,7 @@
 set(TEST_SOURCES
     # add your *.cpp files here
     Tester.cpp
+    function/TestFunctionHandle.cpp
     parser/TestParser.cpp
     lexer/TestLexer.cpp
     ast/TestAst.cpp

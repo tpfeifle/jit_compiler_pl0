@@ -1,4 +1,4 @@
-#include "../../pljit/ast/AST.hpp"
+#include "pljit/ast/SemanticAnalyzer.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 #include <pljit/lexer/Lexer.hpp>
@@ -7,14 +7,9 @@
 #include <pljit/ast/DotASTVisitor.hpp>
 #include <pljit/ir/OptimizeConstPropagation.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit_ast;
-using namespace std;
-using namespace pljit_lexer;
-using namespace pljit_parser;
-//---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-string getDotOutput3(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
+std::string getDotOutput3(const std::unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
     testing::internal::CaptureStdout();
     DotASTVisitor visitor = DotASTVisitor();
     visitor.visit(*astRoot);
@@ -22,32 +17,32 @@ string getDotOutput3(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
 }
 //---------------------------------------------------------------------------
 TEST(Ir, TestConstPropagation) {
-    vector<string> codeText = {"PARAM foo, loft;\n",
+    std::vector<std::string> codeText = {"PARAM foo, loft;\n",
                                "CONST temp = 1200;\n",
                                "BEGIN\n",
                                "    foo := 12 * temp;\n",
                                "    RETURN loft + ( 1 + 2)\n",
                                "END.\n"};
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    pljit_lexer::Lexer lexer(code);
+    pljit_parser::Parser parser(lexer);
+    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if(!pt) {
         exit(-1);
     }
-    AST ast = AST();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    SemanticAnalyzer ast = SemanticAnalyzer();
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
     std::unordered_map<std::string, int> constValues{};
     for(const auto& el: ast.symbolTable) {
         if(el.second.first.type == pljit_ast::Symbol::Type::Const) {
             constValues.insert({el.first, el.second.first.value});
         }
     }
-    pljit_pljit_ir::OptimizeConstPropagation optConstPropagation = pljit_pljit_ir::OptimizeConstPropagation(constValues);
+    pljit_ir::OptimizeConstPropagation optConstPropagation = pljit_ir::OptimizeConstPropagation(constValues);
     optConstPropagation.visit(*astRoot);
-    string output = getDotOutput3(astRoot);
+    std::string output = getDotOutput3(astRoot);
 
-    string expectedOutput = "AST0[label=\"Function\"];\n"
+    std::string expectedOutput = "AST0[label=\"Function\"];\n"
                             "AST0 -> AST1\n"
                             "AST1[label=\"Assignment\"];\n"
                             "AST1 -> AST2\n"

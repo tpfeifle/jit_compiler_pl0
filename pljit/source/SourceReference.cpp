@@ -16,7 +16,7 @@ SourceReference::SourceReference(unsigned lineNum, unsigned charPos, unsigned le
     // TODO add again
 }
 
-void SourceReference::printContext(const std::string& message) {
+void SourceReference::printContext(std::string_view message) {
     std::cerr << lineNum << ":" << charPos << ":" << message << std::endl;
     std::cerr << code.getLine(lineNum);
     std::cerr << std::string(charPos, ' ') << '^' << std::string(length - 1, '~') << std::endl;

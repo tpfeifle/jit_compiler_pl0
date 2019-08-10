@@ -1,7 +1,8 @@
 set(PLJIT_SOURCES
     # add your *.cpp files here
+        function/PljitFunction.cpp
         function/pljit.cpp
-        ast/AST.cpp
+        ast/SemanticAnalyzer.cpp
         ast/ASTNode.cpp
         ast/DotASTVisitor.cpp
         ast/Symbol.cpp

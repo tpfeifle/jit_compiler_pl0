@@ -4,18 +4,16 @@
 #include <pljit/parser/DotPTVisitor.hpp>
 #include <pljit/ast/ASTNode.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit_lexer;
-using namespace pljit_parser;
-using namespace pljit;
+namespace pljit_parser {
+//---------------------------------------------------------------------------
 using PTT = PTNode::Type;
-using namespace std;
 //---------------------------------------------------------------------------
 
-unique_ptr<NonTerminalPTNode> getParseTree(const vector<string>& codeText) {
+std::unique_ptr<NonTerminalPTNode> getParseTree(const std::vector<std::string>& codeText) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    Lexer lexer = Lexer(code);
+    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     Parser parser(lexer);
-    unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     return pt;
 }
 
@@ -44,7 +42,7 @@ std::string getDotOutput(const std::unique_ptr<pljit_parser::NonTerminalPTNode>&
 
 
 TEST(Parser, TestReturn) {
-    vector<string> codeText = {"BEGIN\n",
+    std::vector<std::string> codeText = {"BEGIN\n",
                                "RETURN 1\n",
                                "END.\n"};
     auto pt = getParseTree(codeText);
@@ -79,7 +77,7 @@ TEST(Parser, TestReturn) {
 }
 
 TEST(Parser, TestAllSimple) {
-    vector<string> codeText = {"PARAM width, height, depth;\n",
+    std::vector<std::string> codeText = {"PARAM width, height, depth;\n",
                                "VAR volume;\n",
                                "CONST density = 2400;\n",
                                "BEGIN\n",
@@ -334,4 +332,6 @@ TEST(ParserDefaultNodesTest, TestNodes) {
     assert((*pt).children[4].type == PTNode::Type::GenericToken);
 }
  */
+//---------------------------------------------------------------------------
+} // namespace pljit_parser
 //---------------------------------------------------------------------------

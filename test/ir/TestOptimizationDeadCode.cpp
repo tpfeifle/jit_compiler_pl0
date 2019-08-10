@@ -1,4 +1,4 @@
-#include "../../pljit/ast/AST.hpp"
+#include "pljit/ast/SemanticAnalyzer.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 #include <pljit/lexer/Lexer.hpp>
@@ -7,27 +7,22 @@
 #include <pljit/ast/DotASTVisitor.hpp>
 #include <pljit/ir/OptimizeDeadCode.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit_ast;
-using namespace std;
-using namespace pljit_lexer;
-using namespace pljit_parser;
-//---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> getAstRoot2(const vector<string>& codeText) { // TODO fix linker error correctly
+std::unique_ptr<FunctionAST> getAstRoot2(const std::vector<std::string>& codeText) { // TODO fix linker error correctly
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    pljit_lexer::Lexer lexer(code);
+    pljit_parser::Parser parser(lexer);
+    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if(!pt) {
         exit(-1);
     }
-    AST ast = AST();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    SemanticAnalyzer ast = SemanticAnalyzer();
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
     return astRoot;
 }
 //---------------------------------------------------------------------------
-string getDotOutput2(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
+std::string getDotOutput2(const std::unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
     testing::internal::CaptureStdout();
     DotASTVisitor visitor = DotASTVisitor();
     visitor.visit(*astRoot);
@@ -35,16 +30,16 @@ string getDotOutput2(const unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
 }
 //---------------------------------------------------------------------------
 TEST(Ir, TestDeadCode) {
-    vector<string> codeText = {"PARAM foo;\n",
+    std::vector<std::string> codeText = {"PARAM foo;\n",
                                "BEGIN\n",
                                "    RETURN 1;\n",
                                "    foo := 12\n",
                                "END.\n"};
     auto astRoot = getAstRoot2(codeText);
-    pljit_pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_pljit_ir::OptimizeDeadCode();
+    pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
     optimizeDeadCode.visit(*astRoot);
-    string output = getDotOutput2(astRoot);
-    string expectedOutput = "AST0[label=\"Function\"];\n"
+    std::string output = getDotOutput2(astRoot);
+    std::string expectedOutput = "AST0[label=\"Function\"];\n"
                             "AST0 -> AST1\n"
                             "AST1[label=\"Return\"];\n"
                             "AST1 -> AST2\n"
