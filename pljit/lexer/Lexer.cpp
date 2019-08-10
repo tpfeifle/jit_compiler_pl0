@@ -44,9 +44,9 @@ std::unique_ptr<Token> Lexer::next() {
         currentPos = 0;
     }
     // std::cout << "why am I even here -.- (Lexer)" << std::endl;
-    Token endToken = Token(pljit_source::SourceReference(currentLine, currentPos, 1, code),
-                          Token::Type::Invalid);
-    return std::make_unique<Token>(std::move(endToken)); // this is after there was nothing to read anymore, provide source location for error messages in parser
+    //Token endToken = Token(;
+    return std::make_unique<Token>(pljit_source::SourceReference(currentLine, currentPos, 1, code),
+                                   Token::Type::Invalid); // this is after there was nothing to read anymore, provide source location for error messages in parser
 }
 //---------------------------------------------------------------------------
 int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
