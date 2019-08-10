@@ -38,10 +38,10 @@ unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition() {
     }
 
     vector<unique_ptr<PTNode>> children;
-    if (paramDeclaration) {
+    if (paramDeclaration != nullptr) {
         children.emplace_back(move(paramDeclaration));
     }
-    if (varDeclaration) {
+    if (varDeclaration != nullptr) {
         children.emplace_back(move(varDeclaration));
     }
     if (constDeclaration) {

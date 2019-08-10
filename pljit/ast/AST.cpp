@@ -39,7 +39,7 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
         return nullptr;
     }
     bool hasReturn = false;
-    for (unsigned long i = 0; i < statementList->children.size(); i++) {
+    for (unsigned long i = 0; i < statementList->children.size(); i+=2) {
         auto* statement = static_cast<NonTerminalPTNode*>(statementList->children[i].get());
         // TODO: using .get or .release?
         // TODO: this casting is really ugly ...
@@ -52,7 +52,6 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
             hasReturn = true;
         }
         children.emplace_back(move(ASTstatement));
-        i++;
     }
     if (!hasReturn) {
         cerr << "Function has no return statement" << endl;
@@ -63,14 +62,14 @@ unique_ptr<FunctionAST> AST::analyzeParseTree(const shared_ptr<PTNode>& root)
 //---------------------------------------------------------------------------
 void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     auto* declaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
-    for (unsigned long i = 0; i < declaratorList->children.size(); i++) {
-        if (declaratorList->children[i]->getType() == PTNode::Type::Identifier) {
+    for(auto& child: declaratorList->children) {
+        if (child->getType() == PTNode::Type::Identifier) {
             // for declarator
-            auto* identiferToken = static_cast<IdentifierPTNode*>(declaratorList->children[i].get());
+            auto* identiferToken = static_cast<IdentifierPTNode*>(child.get());
             string identifier = identiferToken->getName();
             if (symbolTable.find(identifier) == symbolTable.end()) {
                 bool initialize = type == Symbol::Type::Param;
-                Symbol symbol = Symbol(type, declaratorList->children[i]->source, initialize, 0);
+                Symbol symbol = Symbol(type, child->source, initialize, 0);
                 symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, currentSymbolId++}));
             } else {
                 identiferToken->source.printContext(
@@ -83,7 +82,7 @@ void AST::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
 //---------------------------------------------------------------------------
 void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
     auto* initDeclaratorList = static_cast<NonTerminalPTNode*>(node->children[1].get());
-    for (unsigned long i = 0; i < initDeclaratorList->children.size(); i++) {
+    for (unsigned long i = 0; i < initDeclaratorList->children.size(); i+=2) {
         auto* initDeclarator = static_cast<NonTerminalPTNode*>(initDeclaratorList->children[i].get());
 
         auto* identiferToken = static_cast<IdentifierPTNode*>(initDeclarator->children[0].get());
@@ -97,7 +96,6 @@ void AST::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type) {
                     "This identifier is already declared. Duplicate declarations are not allowed");
             return;
         }
-        i++;
     }
 }
 //---------------------------------------------------------------------------

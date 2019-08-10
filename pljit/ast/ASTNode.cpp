@@ -53,6 +53,7 @@ int64_t BinaryOperationAST::execute(ir::Evaluate& evaluate) {
             if (temp == 0) {
                 std::cout << "Division by zero error" << std::endl;
                 evaluate.errorCode = 1;
+                return -1; // TODO
             }
             return left->execute(evaluate) / temp;
     }
