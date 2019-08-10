@@ -24,7 +24,7 @@ class SemanticAnalyzer {
 
 public:
 
-    std::unique_ptr<FunctionAST> analyzeParseTree(const std::shared_ptr<pljit_parser::PTNode>& root);
+    std::unique_ptr<FunctionAST> analyzeParseTree(std::unique_ptr<pljit_parser::NonTerminalPTNode> root);
     std::unordered_map<std::string, std::pair<Symbol, unsigned>> symbolTable{};
 };
 //---------------------------------------------------------------------------

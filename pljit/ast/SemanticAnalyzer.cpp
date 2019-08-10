@@ -6,10 +6,9 @@ using namespace pljit_parser;
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(const shared_ptr<PTNode>& root)
+unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(unique_ptr<NonTerminalPTNode> node)
 // analyze the ParseTree: This is the starting-point for the analysis
 {
-    auto* node = static_cast<NonTerminalPTNode*>(root.get());
     vector<unique_ptr<ASTNode>> children;
     unsigned childrenIndex = 0;
     if (node->children[0]->getType() == PTNode::Type::ParamDeclaration) {

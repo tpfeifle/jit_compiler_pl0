@@ -9,7 +9,7 @@ namespace pljit_parser {
 using PTT = PTNode::Type;
 //---------------------------------------------------------------------------
 
-std::unique_ptr<NonTerminalPTNode> getParseTree(const std::vector<std::string>& codeText) {
+std::unique_ptr<NonTerminalPTNode> getParseTree(const std::string& codeText) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     Parser parser(lexer);
@@ -24,14 +24,14 @@ std::string getDotOutput(const std::unique_ptr<pljit_parser::NonTerminalPTNode>&
     return testing::internal::GetCapturedStdout();
 }
 
-std::string getParsingErrors(const std::vector<std::string>& codeText) {
+std::string getParsingErrors(const std::string& codeText) {
     testing::internal::CaptureStderr();
     auto pt = getParseTree(codeText);
     return testing::internal::GetCapturedStderr();
 }
 
 TEST(Parser, TestInvalidDeclaration) {
-    std::vector<std::string> codeText = {"PARAM width, CONST, height, depth;\n"};
+    std::string codeText = "PARAM width, CONST, height, depth;";
     std::string expectedError = "0:13:Expected identifier\n"
                                 "PARAM width, CONST, height, depth;\n"
                                 "             ^~~~~\n";
@@ -39,8 +39,7 @@ TEST(Parser, TestInvalidDeclaration) {
 }
 
 TEST(Parser, TestMissingSemicolonInDeclaration) {
-    std::vector<std::string> codeText = {"PARAM width\n"};
-    std::cout << getParsingErrors(codeText) << std::endl;
+    std::string codeText = "PARAM width";
     std::string expectedError = "0:11:Expected separator\n"
                                 "PARAM width\n"
                                 "           ^\n";
@@ -48,9 +47,9 @@ TEST(Parser, TestMissingSemicolonInDeclaration) {
 }
 
 TEST(Parser, TestMissingBracket) {
-    std::vector<std::string> codeText = {"BEGIN\n",
-                                         "RETURN 2 * (1 + 2 \n",
-                                         "END.\n"};
+    std::string codeText = "BEGIN\n"
+                           "RETURN 2 * (1 + 2 \n"
+                           "END.";
     std::cout << getParsingErrors(codeText) << std::endl;
     std::string expectedError = "0:11:Expected separator\n"
                                 "PARAM width\n"
@@ -59,8 +58,8 @@ TEST(Parser, TestMissingBracket) {
 }
 
 TEST(Parser, TestMissingBegin) {
-    std::vector<std::string> codeText = {"RETURN 2 * (1 + 2 \n",
-                                         "END.\n"};
+    std::string codeText = "RETURN 2 * (1 + 2 \n"
+                           "END.";
     std::string expectedError = "0:0:Expected BEGIN keyword\n"
                                 "RETURN 2 * (1 + 2 \n"
                                 "^~~~~~\n";
@@ -68,9 +67,9 @@ TEST(Parser, TestMissingBegin) {
 }
 
 TEST(Parser, TestReturn) {
-    std::vector<std::string> codeText = {"BEGIN\n",
-                                         "RETURN 1\n",
-                                         "END.\n"};
+    std::string codeText = "BEGIN\n"
+                           "RETURN 1\n"
+                           "END.";
     auto pt = getParseTree(codeText);
     std::string output = getDotOutput(pt);
     std::string expectedDotGraph;
@@ -103,13 +102,13 @@ TEST(Parser, TestReturn) {
 }
 
 TEST(Parser, TestAllSimple) {
-    std::vector<std::string> codeText = {"PARAM width, height, depth;\n",
-                                         "VAR volume;\n",
-                                         "CONST density = 2400;\n",
-                                         "BEGIN\n",
-                                         "volume := width * height;\n",
-                                         "RETURN density * volume\n",
-                                         "END.\n"};
+    std::string codeText = "PARAM width, height, depth;\n"
+                           "VAR volume;\n"
+                           "CONST density = 2400;\n"
+                           "BEGIN\n"
+                           "volume := width * height;\n"
+                           "RETURN density * volume\n"
+                           "END.";
     auto pt = getParseTree(codeText);
     std::string output = getDotOutput(pt);
     std::string expectedDotGraph;

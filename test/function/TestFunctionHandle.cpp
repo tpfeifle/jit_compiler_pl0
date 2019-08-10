@@ -13,16 +13,16 @@ void funcWrapper(FunctionHandle functionHandle, unsigned a, unsigned b, const st
 
 TEST(Function, TestConcurrent) {
     Pljit jit;
-    auto func = jit.registerFunction({"PARAM a, b;\n",
-                                  "BEGIN\n",
-                                  "    RETURN a + b\n",
-                                  "END.\n"});
+    auto func = jit.registerFunction("PARAM a, b;\n"
+                                     "BEGIN\n"
+                                     "    RETURN a + b\n"
+                                     "END.\n");
 
 
     std::vector<std::thread> threads;
     std::vector<int64_t> expectedRes = {0, 4, 8, 12, 16};
     for (uint32_t value = 0; value < 5; ++value) {
-        threads.emplace_back(funcWrapper, func, value, value*3, expectedRes);
+        threads.emplace_back(funcWrapper, func, value, value * 3, expectedRes);
     }
 
     for (auto& thread : threads)
@@ -31,14 +31,14 @@ TEST(Function, TestConcurrent) {
 
 TEST(Function, TestMultipleFunc) {
     Pljit jit;
-    auto func = jit.registerFunction({"PARAM a, b;\n",
-                                      "BEGIN\n",
-                                      "    RETURN a + b\n",
-                                      "END.\n"});
-    auto func2 = jit.registerFunction({"PARAM a, b;\n",
-                                  "BEGIN\n",
-                                  "    RETURN 3* a + b\n",
-                                  "END.\n"});
+    auto func = jit.registerFunction("PARAM a, b;\n"
+                                     "BEGIN\n"
+                                     "    RETURN a + b\n"
+                                     "END.\n");
+    auto func2 = jit.registerFunction("PARAM a, b;\n"
+                                      "BEGIN\n"
+                                      "    RETURN 3* a + b\n"
+                                      "END.\n");
     auto res = func(1, 10);
     auto res2 = func2(3, 5);
     assert(res == 11);

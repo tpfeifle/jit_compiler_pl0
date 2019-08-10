@@ -20,12 +20,12 @@ public:
     int operator()(Sizes... sizes) {
         return function->execute(sizes...);
     }
-    FunctionHandle(PljitFunction* function): function(function) {};
+    FunctionHandle(PljitFunction* function) : function(function) {};
 };
 
 class Pljit {
 public:
-    FunctionHandle registerFunction(std::vector<std::string> codeText);
+    FunctionHandle registerFunction(const std::string& codeText);
     std::vector<std::unique_ptr<PljitFunction>> functions;
 };
 //---------------------------------------------------------------------------

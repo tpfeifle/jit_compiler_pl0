@@ -17,24 +17,24 @@ std::string getDotOutput3(const std::unique_ptr<FunctionAST>& astRoot) { //TODO 
 }
 //---------------------------------------------------------------------------
 TEST(Ir, TestConstPropagation) {
-    std::vector<std::string> codeText = {"PARAM foo, loft;\n",
-                               "CONST temp = 1200;\n",
-                               "BEGIN\n",
-                               "    foo := 12 * temp;\n",
-                               "    RETURN loft + ( 1 + 2)\n",
-                               "END.\n"};
+    std::string codeText = "PARAM foo, loft;\n"
+                           "CONST temp = 1200;\n"
+                           "BEGIN\n"
+                           "    foo := 12 * temp;\n"
+                           "    RETURN loft + ( 1 + 2)\n"
+                           "END.\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     pljit_lexer::Lexer lexer(code);
     pljit_parser::Parser parser(lexer);
-    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    if(!pt) {
+    std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    if (!pt) {
         exit(-1);
     }
     SemanticAnalyzer ast = SemanticAnalyzer();
-    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
     std::unordered_map<std::string, int> constValues{};
-    for(const auto& el: ast.symbolTable) {
-        if(el.second.first.type == pljit_ast::Symbol::Type::Const) {
+    for (const auto& el: ast.symbolTable) {
+        if (el.second.first.type == pljit_ast::Symbol::Type::Const) {
             constValues.insert({el.first, el.second.first.value});
         }
     }
@@ -43,20 +43,20 @@ TEST(Ir, TestConstPropagation) {
     std::string output = getDotOutput3(astRoot);
 
     std::string expectedOutput = "AST0[label=\"Function\"];\n"
-                            "AST0 -> AST1\n"
-                            "AST1[label=\"Assignment\"];\n"
-                            "AST1 -> AST2\n"
-                            "AST2[label=\" foo \"];\n"
-                            "AST1 -> AST3\n"
-                            "AST3[label=\" 14400 \"];\n"
-                            "AST0 -> AST4\n"
-                            "AST4[label=\"Return\"];\n"
-                            "AST4 -> AST5\n"
-                            "AST5[label=\"+\"];\n"
-                            "AST5 -> AST6\n"
-                            "AST6[label=\" loft \"];\n"
-                            "AST5 -> AST7\n"
-                            "AST7[label=\" 3 \"];\n";
+                                 "AST0 -> AST1\n"
+                                 "AST1[label=\"Assignment\"];\n"
+                                 "AST1 -> AST2\n"
+                                 "AST2[label=\" foo \"];\n"
+                                 "AST1 -> AST3\n"
+                                 "AST3[label=\" 14400 \"];\n"
+                                 "AST0 -> AST4\n"
+                                 "AST4[label=\"Return\"];\n"
+                                 "AST4 -> AST5\n"
+                                 "AST5[label=\"+\"];\n"
+                                 "AST5 -> AST6\n"
+                                 "AST6[label=\" loft \"];\n"
+                                 "AST5 -> AST7\n"
+                                 "AST7[label=\" 3 \"];\n";
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------

@@ -9,9 +9,9 @@ using TT = Token::Type;
 
 //---------------------------------------------------------------------------
 TEST(Lexer, TestParametersAll) {
-    std::vector<std::string> codeText = {"PARAM width, height, depth;",
-                                         "VAR volume;",
-                                         "CONST foo = 12;"};
+    std::string codeText = "PARAM width, height, depth;\n"
+                           "VAR volume;\n"
+                           "CONST foo = 12;";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
@@ -19,7 +19,7 @@ TEST(Lexer, TestParametersAll) {
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -39,15 +39,15 @@ TEST(Lexer, TestParametersAll) {
 }
 
 TEST(Lexer, TestParametersNoVar) {
-    std::vector<std::string> codeText = {"PARAM width, height, depth;",
-                                         "CONST volume = 1, foo = 20;"};
+    std::string codeText = "PARAM width, height, depth;\n"
+                           "CONST volume = 1, foo = 20;";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -61,14 +61,14 @@ TEST(Lexer, TestParametersNoVar) {
 }
 
 TEST(Lexer, TestParametersNoVarNoParam) {
-    std::vector<std::string> codeText = {"CONST volume = 1, foo = 20;"};
+    std::string codeText = "CONST volume = 1, foo = 20;";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -81,14 +81,14 @@ TEST(Lexer, TestParametersNoVarNoParam) {
 }
 
 TEST(Lexer, TestSimpleStatement) {
-    std::vector<std::string> codeText = {"foo := 200 * (10 + 12);"};
+    std::string codeText = "foo := 200 * (10 + 12);";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -102,14 +102,14 @@ TEST(Lexer, TestSimpleStatement) {
 }
 
 TEST(Lexer, TestComplexStatement) {
-    std::vector<std::string> codeText = {"foo := a*1+1234a-12 *3b;"};
+    std::string codeText = "foo := a*1+1234a-12 *3b;";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -124,19 +124,19 @@ TEST(Lexer, TestComplexStatement) {
 }
 
 TEST(Lexer, TestFullProgram) {
-    std::vector<std::string> codeText = {"PARAM width;",
-                                         "CONST foo = 12;",
-                                         "   BEGIN",
-                                         " foo:=width;",
-                                         "RETURN foo",
-                                         "END."};
+    std::string codeText = "PARAM width;\n"
+                           "CONST foo = 12;\n"
+                           "   BEGIN\n"
+                           " foo:=width;\n"
+                           "RETURN foo\n"
+                           "END.";
     // tokenize input
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
@@ -153,34 +153,34 @@ TEST(Lexer, TestFullProgram) {
 
 
 TEST(Lexer, TestExpectError) {
-    std::vector<std::string> codeText = {"PARAM? width;"};
+    std::string codeText = "PARAM? width;";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     testing::internal::CaptureStderr();
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(!token || token->getType() == Token::Type::Invalid) {
+        if (!token || token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);
     }
     std::string output = testing::internal::GetCapturedStderr();
     std::string expectedOutput = "0:5:Unexpected character\n"
-                                 "PARAM? width;"
+                                 "PARAM? width;\n"
                                  "     ^\n";
     assert(output == expectedOutput);
 
 }
 
 TEST(Lexer, TestNoWhitespaces) {
-    std::vector<std::string> codeText = {"PARAM width,  height,  temp;"};
+    std::string codeText = "PARAM width,  height,  temp;";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     std::vector<Token> lexerTokens;
     while (true) {
         std::unique_ptr<Token> token = lexer.next();
-        if(token->getType() == Token::Type::Invalid) {
+        if (token->getType() == Token::Type::Invalid) {
             break;
         }
         lexerTokens.emplace_back(*token);

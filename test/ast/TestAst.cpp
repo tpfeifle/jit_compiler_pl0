@@ -13,16 +13,16 @@ using namespace pljit_parser;
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> getAstRoot(const vector<string>& codeText) {
+unique_ptr<FunctionAST> getAstRoot(const string& codeText) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
-    shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    if(!pt) {
+    unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    if (!pt) {
         exit(-1);
     }
     SemanticAnalyzer ast = SemanticAnalyzer();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
     return astRoot;
 }
 //---------------------------------------------------------------------------
@@ -34,9 +34,9 @@ string getDotOutput(const unique_ptr<FunctionAST>& astRoot) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestBrackets) {
-    vector<string> codeText = {"BEGIN\n",
-                               "    RETURN 12 * (3 - 2)\n",
-                               "END.\n"};
+    string codeText = "BEGIN\n"
+                      "    RETURN 12 * (3 - 2)\n"
+                      "END.\n";
     auto ast = getAstRoot(codeText);
     string output = getDotOutput(ast);
     string expectedOutput = "AST0[label=\"Function\"];\n"
@@ -56,37 +56,37 @@ TEST(Ast, TestBrackets) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestSymbolTable) {
-    vector<string> codeText = {"PARAM width, height;\n",
-                               "VAR temp, foo;\n",
-                               "CONST hello = 12, test = 2000;\n",
-                               "BEGIN\n",
-                               "    RETURN 12 * (3 - 2)\n",
-                               "END.\n"};
+    string codeText = "PARAM width, height;\n"
+                      "VAR temp, foo;\n"
+                      "CONST hello = 12, test = 2000;\n"
+                      "BEGIN\n"
+                      "    RETURN 12 * (3 - 2)\n"
+                      "END.\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     Lexer lexer = Lexer(code);
     Parser parser(lexer);
-    shared_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
 
     SemanticAnalyzer ast = SemanticAnalyzer();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
     vector<pair<string, int>> expectedVariables = {{"width",  Symbol::Type::Param},
                                                    {"height", Symbol::Type::Param},
                                                    {"temp",   Symbol::Type::Var},
                                                    {"foo",    Symbol::Type::Var},
                                                    {"hello",  Symbol::Type::Const},
-                                                   {"test",    Symbol::Type::Const}};
-    for(auto var:expectedVariables) {
+                                                   {"test",   Symbol::Type::Const}};
+    for (auto var:expectedVariables) {
         assert(ast.symbolTable.find(var.first) != ast.symbolTable.end());
         assert(ast.symbolTable.at(var.first).first.type == var.second);
     }
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestIdentifierDeclaredTwice) {
-    vector<string> codeText = {"PARAM width, height;\n",
-                               "VAR width;\n",
-                               "BEGIN\n",
-                               "    RETURN 1\n",
-                               "END.\n"};
+    string codeText = "PARAM width, height;\n"
+                      "VAR width;\n"
+                      "BEGIN\n"
+                      "    RETURN 1\n"
+                      "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
     string error = testing::internal::GetCapturedStderr();
@@ -97,9 +97,9 @@ TEST(Ast, TestIdentifierDeclaredTwice) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestUsingUndeclaredIdentifier) {
-    vector<string> codeText = {"BEGIN\n",
-                               "    RETURN width\n",
-                               "END.\n"};
+    string codeText = "BEGIN\n"
+                      "    RETURN width\n"
+                      "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
     string error = testing::internal::GetCapturedStderr();
@@ -110,11 +110,11 @@ TEST(Ast, TestUsingUndeclaredIdentifier) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestAssigningValueToConstant) {
-    vector<string> codeText = {"CONST foo = 10;\n",
-                               "BEGIN\n",
-                               "    foo := 20;\n",
-                               "    RETURN foo\n",
-                               "END.\n"};
+    string codeText = "CONST foo = 10;\n"
+                      "BEGIN\n"
+                      "    foo := 20;\n"
+                      "    RETURN foo\n"
+                      "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
     string error = testing::internal::GetCapturedStderr();
@@ -126,10 +126,10 @@ TEST(Ast, TestAssigningValueToConstant) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestUsingUnitializedVariable) {
-    vector<string> codeText = {"VAR foo;\n",
-                               "BEGIN\n",
-                               "    RETURN foo\n",
-                               "END.\n"};
+    string codeText = "VAR foo;\n"
+                      "BEGIN\n"
+                      "    RETURN foo\n"
+                      "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
     string error = testing::internal::GetCapturedStderr();
@@ -141,10 +141,10 @@ TEST(Ast, TestUsingUnitializedVariable) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestMissingReturnStatement) {
-    vector<string> codeText = {"PARAM foo;\n",
-                               "BEGIN\n",
-                               "    foo := 20\n"
-                               "END.\n"};
+    string codeText = "PARAM foo;\n"
+                      "BEGIN\n"
+                      "    foo := 20\n"
+                      "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
     string error = testing::internal::GetCapturedStderr();

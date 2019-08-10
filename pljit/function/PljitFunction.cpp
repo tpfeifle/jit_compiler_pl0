@@ -7,12 +7,12 @@ namespace pljit_function {
 void PljitFunction::compile() {
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     pljit_parser::Parser parser = pljit_parser::Parser(lexer);
-    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         std::cout << "Parser failed" << std::endl;
         return;
     }
-    astRoot = ast.analyzeParseTree(pt);
+    astRoot = ast.analyzeParseTree(std::move(pt));
     if (!astRoot) {
         std::cout << "Abstract Syntax Tree failed" << std::endl;
         return;

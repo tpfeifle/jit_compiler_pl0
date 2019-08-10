@@ -9,16 +9,16 @@
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-std::unique_ptr<FunctionAST> getAstRoot2(const std::vector<std::string>& codeText) { // TODO fix linker error correctly
+std::unique_ptr<FunctionAST> getAstRoot2(const std::string& codeText) { // TODO fix linker error correctly
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     pljit_lexer::Lexer lexer(code);
     pljit_parser::Parser parser(lexer);
-    std::shared_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    if(!pt) {
+    std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    if (!pt) {
         exit(-1);
     }
     SemanticAnalyzer ast = SemanticAnalyzer();
-    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(pt);
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
     return astRoot;
 }
 //---------------------------------------------------------------------------
@@ -30,20 +30,20 @@ std::string getDotOutput2(const std::unique_ptr<FunctionAST>& astRoot) { //TODO 
 }
 //---------------------------------------------------------------------------
 TEST(Ir, TestDeadCode) {
-    std::vector<std::string> codeText = {"PARAM foo;\n",
-                               "BEGIN\n",
-                               "    RETURN 1;\n",
-                               "    foo := 12\n",
-                               "END.\n"};
+    std::string codeText = "PARAM foo;\n"
+                           "BEGIN\n"
+                           "    RETURN 1;\n"
+                           "    foo := 12\n"
+                           "END.\n";
     auto astRoot = getAstRoot2(codeText);
     pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
     optimizeDeadCode.visit(*astRoot);
     std::string output = getDotOutput2(astRoot);
     std::string expectedOutput = "AST0[label=\"Function\"];\n"
-                            "AST0 -> AST1\n"
-                            "AST1[label=\"Return\"];\n"
-                            "AST1 -> AST2\n"
-                            "AST2[label=\" 1 \"];\n";
+                                 "AST0 -> AST1\n"
+                                 "AST1[label=\"Return\"];\n"
+                                 "AST1 -> AST2\n"
+                                 "AST2[label=\" 1 \"];\n";
     assert(output == expectedOutput);
 }
 //---------------------------------------------------------------------------
