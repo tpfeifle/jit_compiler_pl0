@@ -4,16 +4,16 @@
 #include <string_view>
 #include <iostream>
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::lexer {
 //---------------------------------------------------------------------------
 std::unique_ptr<Token> Lexer::next() {
     while (currentLine < code.numberOfLines()) {
-        int i = currentPos;
-        int beginningOfToken = 0;
+        unsigned i = currentPos;
+        unsigned beginningOfToken = 0;
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
-                Token token = Token(SourceReference(0, 0, 1, code), Token::Category::OPERATOR,
-                                    Token::Type::PLUS); // TODO: this feels stupid to use as a placeholder
+                Token token = Token(SourceReference(0, 0, 1, code),
+                                              Token::Type::Plus); // TODO: this feels stupid to use as a placeholder
 
                 if (determineCategory(token, i, 1) == -1) {
                     //invalid character -->
@@ -66,40 +66,40 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
     char firstChar = code.getCharacter(currentLine, start);
     SourceReference source = SourceReference(currentLine, start, length, code);
     if (firstChar == '+' && length == 1) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::PLUS);
+        token = Token(source, Token::Type::Plus);
     } else if (firstChar == '-' && length == 1) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::MINUS);
+        token = Token(source, Token::Type::Minus);
     } else if (firstChar == '=' && length == 1) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::EQUAL);
+        token = Token(source, Token::Type::Equal);
     } else if (firstChar == '*' && length == 1) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::MULTIPLY);
+        token = Token(source, Token::Type::Multiply);
     } else if (firstChar == '/' && length == 1) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::DIVIDE);
+        token = Token(source, Token::Type::Divide);
     } else if (firstChar == '.' && length == 1) {
-        token = Token(source, Token::Category::KEYWORD, Token::Type::FINAL);
+        token = Token(source, Token::Type::Final);
     } else if (firstChar == ':' &&
                (length == 1 || (length == 2 && code.getCharacter(currentLine, start + length - 1) == '='))) {
-        token = Token(source, Token::Category::OPERATOR, Token::Type::ASSIGNMENT);
+        token = Token(source, Token::Type::Assignment);
     } else if (firstChar == ',' && length == 1) {
-        token = Token(source, Token::Category::SEPARATOR, Token::Type::COLON);
+        token = Token(source, Token::Type::Colon);
     } else if (firstChar == ';' && length == 1) {
-        token = Token(source, Token::Category::SEPARATOR, Token::Type::SEMICOLON);
+        token = Token(source, Token::Type::Semicolon);
     } else if (firstChar == '(' && length == 1) {
-        token = Token(source, Token::Category::SEPARATOR, Token::Type::LEFT_BRACKET);
+        token = Token(source, Token::Type::Left_Bracket);
     } else if (firstChar == ')' && length == 1) {
-        token = Token(source, Token::Category::SEPARATOR, Token::Type::RIGHT_BRACKET);
+        token = Token(source, Token::Type::Right_Bracket);
     } else if (isdigit(firstChar)) {
         for (unsigned i = 0; i < length; i++) {
             if (!isdigit(code.getCharacter(currentLine, start + i))) {
-                token = Token(source, Token::Category::INVALID, Token::Type::NOT_USED);
+                token = Token(source, Token::Type::NOT_USED);
                 return -1;
             }
         }
-        token = Token(source, Token::Category::LITERAL, Token::Type::NOT_USED);
+        token = Token(source, Token::Type::Literal);
     } else {
         for (unsigned i = 0; i < length; i++) {
             if (!isalpha(code.getCharacter(currentLine, start + i))) {
-                token = Token(source, Token::Category::INVALID, Token::Type::NOT_USED);
+                token = Token(source, Token::Type::NOT_USED);
                 return -1;
             }
         }
@@ -108,19 +108,19 @@ int Lexer::determineCategory(Token& token, unsigned start, unsigned length) {
                                                                                   length); // TODO maybe use string_view instead
 
         if (tokenAsString == "PARAM") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::PARAM);
+            token = Token(source, Token::Type::Param);
         } else if (tokenAsString == "VAR") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::VAR);
+            token = Token(source, Token::Type::Var);
         } else if (tokenAsString == "CONST") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::CONST);
+            token = Token(source, Token::Type::Const);
         } else if (tokenAsString == "BEGIN") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::BEGIN);
+            token = Token(source, Token::Type::Begin);
         } else if (tokenAsString == "END") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::END);
+            token = Token(source, Token::Type::End);
         } else if (tokenAsString == "RETURN") {
-            token = Token(source, Token::Category::KEYWORD, Token::Type::RETURN);
+            token = Token(source, Token::Type::Return);
         } else {
-            token = Token(source, Token::Category::IDENTIFIER, Token::Type::NOT_USED);
+            token = Token(source, Token::Type::Identifier);
         }
     }
     return 1;

@@ -6,36 +6,57 @@
 #include <pljit/ir/Evaluate.hpp>
 #include <unordered_map>
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::ast {
 //---------------------------------------------------------------------------
-namespace ast {
-//---------------------------------------------------------------------------
-class ASTNode;
+struct FunctionAST;
 
-class VisitorAST {
+struct StatementAST;
+struct AssignmentAST;
+struct ReturnStatementAST;
+
+struct ExpressionAST;
+struct LiteralAST;
+struct IdentifierAST;
+struct UnaryAST;
+struct BinaryOperationAST;
+
+
+class ASTVisitor {
 public:
-    virtual void visitASTNode(ASTNode* node) = 0;
+    virtual void visit(FunctionAST& node) = 0;
+    //virtual void visit(StatementAST& node) = 0;
+    virtual void visit(AssignmentAST& node) = 0;
+    virtual void visit(ReturnStatementAST& node) = 0;
+    //virtual void visit(ExpressionAST& node) = 0;
+    virtual void visit(LiteralAST& node) = 0;
+    virtual void visit(IdentifierAST& node) = 0;
+    virtual void visit(UnaryAST& node) = 0;
+    virtual void visit(BinaryOperationAST& node) = 0;
 };
-
 
 class ASTNode {
 public:
     /// All possible types of Nodes
     enum class Type {
-        Statement,
-        Expression,
+        AssignmentStatement,
+        ReturnStatement,
+        BinaryExpression,
+        UnaryExpression,
+        LiteralExpression,
+        IdentifierExpression,
         Function
+        //Statement,
+        //Expression,
+        //Function
     };
 
-    int _id;
+    //TODO int _id;
 
-    void accept(VisitorAST* v) {
-        v->visitASTNode(this);
-    }
+    virtual void accept(ASTVisitor& v) = 0;
 
     explicit ASTNode(const Type type) : type(type) {
-        static int id = 0;
-        _id = id++;
+        // TODO static int id = 0;
+        // TODO _id = id++;
     }
 
     virtual int execute(Evaluate& evaluate) = 0;
@@ -49,28 +70,34 @@ private:
 
 
 struct StatementAST : public ASTNode {
-    enum class StatementType {
+    /*enum class StatementType {
         Assignment,
-        ConstAssignment,
-        ConstDecl,
         Return
     };
-    StatementType statementType;
+    StatementType statementType;*/
 
-    explicit StatementAST(StatementType type) : ASTNode(ASTNode::Type::Statement), statementType(type) {};
+    /*void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }*/
+
+    explicit StatementAST(Type type) : ASTNode(type) {};
 };
 
 struct ExpressionAST : ASTNode {
-    enum class Type {
+    /*enum class Type {
         Binary,
         Unary,
         Literal,
         Identifier,
     };
 
-    Type type;
+    Type type;*/
 
-    explicit ExpressionAST(const Type type) : ASTNode(ASTNode::Type::Expression), type(type) {};
+    /*void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }*/
+
+    explicit ExpressionAST(const Type type) : ASTNode(type) {};
 };
 
 //---------------------------------------------------------------------------
@@ -79,15 +106,22 @@ struct FunctionAST : ASTNode {
 
     explicit FunctionAST(std::vector<std::unique_ptr<ASTNode>> children) : ASTNode(ASTNode::Type::Function),
                                                                            children(std::move(children)) {};
-    int execute(Evaluate& evaluate);
+
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
-struct LiteralAST : ExpressionAST {
+struct LiteralAST : ExpressionAST { // TODO: Idea use "LiteralAST : ASTNode" and then the types of ASTNode contain all possible types directly
     int value;
 
-    explicit LiteralAST(int value) : ExpressionAST(ExpressionAST::Type::Literal), value(value) {};
-    int execute(Evaluate& evaluate);
+    explicit LiteralAST(int value) : ExpressionAST(Type::LiteralExpression), value(value) {};
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -100,17 +134,23 @@ struct UnaryAST : ExpressionAST {
     SignType sign;
 
     explicit UnaryAST(std::unique_ptr<ASTNode> child, SignType sign)
-            : ExpressionAST(ExpressionAST::Type::Unary), child(std::move(child)), sign(sign) {};
-    int execute(Evaluate& evaluate);
+            : ExpressionAST(Type::UnaryExpression), child(std::move(child)), sign(sign) {};
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
 struct IdentifierAST : ExpressionAST {
     std::string identifier;
 
-    explicit IdentifierAST(std::string identifier) : ExpressionAST(ExpressionAST::Type::Identifier),
+    explicit IdentifierAST(std::string identifier) : ExpressionAST(Type::IdentifierExpression),
                                                      identifier(std::move(identifier)) {};
-    int execute(Evaluate& evaluate);
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 //---------------------------------------------------------------------------
 struct BinaryOperationAST : ExpressionAST {
@@ -127,38 +167,24 @@ struct BinaryOperationAST : ExpressionAST {
 
 
     explicit BinaryOperationAST(std::unique_ptr<ASTNode> left, OperationType type, std::unique_ptr<ASTNode> right)
-            : ExpressionAST(ExpressionAST::Type::Binary), left(std::move(left)), right(std::move(right)), type(type) {};
-    int execute(Evaluate& evaluate);
+            : ExpressionAST(Type::BinaryExpression), left(std::move(left)), right(std::move(right)), type(type) {};
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
-//---------------------------------------------------------------------------
-struct ConstDeclAST : StatementAST {
-    std::vector<std::unique_ptr<ASTNode>> children;
-
-    explicit ConstDeclAST(std::vector<std::unique_ptr<ASTNode>> children) : StatementAST(StatementType::ConstDecl),
-                                                                            children(std::move(children)) {};
-    int execute(Evaluate& evaluate) override ;
-};
-
 //---------------------------------------------------------------------------
 struct AssignmentAST : public StatementAST {
     std::unique_ptr<IdentifierAST> identifier;
     std::unique_ptr<ASTNode> expression;
 
     explicit AssignmentAST(std::unique_ptr<IdentifierAST> identifier, std::unique_ptr<ASTNode> expression)
-            : StatementAST(StatementType::Assignment), identifier(std::move(identifier)),
+            : StatementAST(Type::AssignmentStatement), identifier(std::move(identifier)),
               expression(std::move(expression)) {};
-    int execute(Evaluate& evaluate);
-};
-
-//---------------------------------------------------------------------------
-struct ConstAssignmentAST : StatementAST {
-    std::unique_ptr<IdentifierAST> identifier;
-    std::unique_ptr<LiteralAST> value;
-
-    explicit ConstAssignmentAST(std::unique_ptr<IdentifierAST> identifier, std::unique_ptr<LiteralAST> value)
-            : StatementAST(StatementType::ConstAssignment), identifier(std::move(identifier)),
-              value(std::move(value)) {};
-    int execute(Evaluate& evaluate);
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -166,11 +192,12 @@ struct ReturnStatementAST : StatementAST {
     std::unique_ptr<ASTNode> expression;
 
     explicit ReturnStatementAST(std::unique_ptr<ASTNode> expression)
-            : StatementAST(StatementType::Return), expression(std::move(expression)) {};
-    int execute(Evaluate& evaluate);
+            : StatementAST(Type::ReturnStatement), expression(std::move(expression)) {};
+    void accept(ASTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int execute(Evaluate& evaluate) override;
 };
 //---------------------------------------------------------------------------
-} //namespace ast
-//---------------------------------------------------------------------------
-}  // namespace pljit
+}  // namespace pljit::ast
 //---------------------------------------------------------------------------

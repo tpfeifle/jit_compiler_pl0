@@ -3,51 +3,41 @@
 #include "../source/SourceReference.hpp"
 #include <optional>
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::lexer {
 //---------------------------------------------------------------------------
 class Token {
 public:
-    enum Category {
-        IDENTIFIER,
-        LITERAL,
-        OPERATOR,
-        SEPARATOR,
-        KEYWORD,
-        INVALID
-    };
-
     enum Type {
-        PLUS,
-        MINUS,
-        MULTIPLY,
-        DIVIDE,
-        ASSIGNMENT,
-        EQUAL,
-        COLON,
-        SEMICOLON,
-        PARAM,
-        RETURN,
-        BEGIN,
-        END,
-        CONST,
-        VAR,
-        FINAL,
-        LEFT_BRACKET,
-        RIGHT_BRACKET,
-        NOT_USED
+        Plus,
+        Minus,
+        Multiply,
+        Divide,
+        Assignment,
+        Equal,
+        Colon,
+        Semicolon,
+        Param,
+        Return,
+        Begin,
+        End,
+        Const,
+        Var,
+        Final,
+        Left_Bracket,
+        Right_Bracket,
+        Identifier,
+        Literal,
+        NOT_USED //TODO
     };
 
-    Token(SourceReference source, const Category tokenCategory, const Type type) : category(tokenCategory), type(type),
-                                                                                   source(source) {}
-
+    Token(SourceReference source, const Type type) : source(source), type(type) {}
     Token(Token& token) = default;
     Token(Token&& token) = default;
+
     Token& operator=(Token&& other) = default;
-    Token::Type getType() const;
-    // Token::Type getCategory() const; TODO check if category really needed
+    [[nodiscard]] Token::Type getType() const;
 
     // virtual ~Token() = default; // public virtual destructor
-    Category category;
     SourceReference source;
 private:
     Type type;
@@ -55,39 +45,3 @@ private:
 //---------------------------------------------------------------------------
 } // namespace pljit
 //---------------------------------------------------------------------------
-
-/*
-
-struct OperatorToken : Token {
-    enum Type {
-        PLUS,
-        MINUS,
-        MULTIPLY,
-        DIVIDE
-    };
-    OperatorToken(SourceReference source, Type type) : Token(source, Token::Category::OPERATOR), type(type) {};
-    Type type;
-};
-
-struct SeparatorToken : Token {
-    enum Type {
-        Colon,
-        Semicolon,
-    };
-    SeparatorToken(SourceReference source, Type type) : Token(source, Token::Category::SEPARATOR), type(type) {};
-    Type type;
-};
-
-struct KeywordToken : Token {
-    enum Type {
-        PARAM,
-        RETURN,
-        BEGIN,
-        END,
-        CONST,
-        VAR,
-        FINAL
-    };
-    KeywordToken(SourceReference source, Type type) : Token(source, Token::Category::KEYWORD), type(type) {};
-    Type type;
-};*/

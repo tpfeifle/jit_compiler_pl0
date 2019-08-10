@@ -4,13 +4,21 @@
 #include "../source/SourceReference.hpp"
 #include "iostream"
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::parser {
 //---------------------------------------------------------------------------
-class PTNode;
+struct LiteralPTNode;
+struct IdentifierPTNode;
+struct GenericTokenPTNode;
+struct OperatorAlternationPTNode;
+struct NonTerminalPTNode;
+struct NonTerminalAlternationPTNode;
 
-class Visitor {
+class PTVisitor {
 public:
-    virtual void visitPTNode(PTNode* node) = 0;
+    virtual void visit(LiteralPTNode& node) = 0;
+    virtual void visit(IdentifierPTNode& node) = 0;
+    virtual void visit(GenericTokenPTNode& node) = 0;
+    virtual void visit(NonTerminalPTNode& node) = 0;
 };
 
 
@@ -21,9 +29,6 @@ public:
         Identifier,
         Literal,
         GenericToken,
-        BracketLeft, // TODO check if brackets can be genericToken as well (because evtl. operator?)
-        BracketRight,
-        Assignment,
         FunctionDefinition,
         ParamDeclaration,
         VarDeclaration,
@@ -44,13 +49,9 @@ public:
 
     SourceReference source;
 
-    void accept(Visitor* v) {
-        v->visitPTNode(this);
-    }
+    virtual void accept(PTVisitor& v) = 0;
 
     explicit PTNode(const Type type, SourceReference source) : source(std::move(source)), type(type) {}
-
-    // Type getType() const; // adding zero means it is a "pure function"
 
     virtual ~PTNode() = default; //public virtual destructor
     // TODO: Check if the following required for all derived classes
@@ -62,47 +63,59 @@ private:
     Type type;
 };
 
-// TODO: rename into Node instead of Token
-class LiteralPTNode : public PTNode {
-public:
+struct LiteralPTNode : public PTNode {
     explicit LiteralPTNode(SourceReference source, int value) : PTNode(PTNode::Type::Literal, std::move(source)),
                                                                 value(value) {};
+    void accept(PTVisitor& v) override  {
+        v.visit(*this);
+    }
+    int getValue() const;
+private:
     int value;
 };
 
-class IdentifierPTNode : public PTNode {
-public:
+struct IdentifierPTNode : public PTNode {
     explicit IdentifierPTNode(SourceReference source) : PTNode(PTNode::Type::Identifier, std::move(source)) {};
 
     std::string getName() {
         return source.getText();
     }
+    void accept(PTVisitor& v) override  {
+        v.visit(*this);
+    }
 };
 
-class GenericTokenPTNode : public PTNode {
+struct GenericTokenPTNode : public PTNode {
 public:
     explicit GenericTokenPTNode(SourceReference source) : PTNode(PTNode::Type::GenericToken, std::move(source)) {};
+    void accept(PTVisitor& v) override  {
+        v.visit(*this);
+    }
 };
 
-class OperatorAlternationPTNode : public GenericTokenPTNode {
-public:
+struct OperatorAlternationPTNode : public GenericTokenPTNode {
     enum OperatorType {
         Plus,
         Minus,
         Multiply,
         Divide
     };
-    OperatorType operatorType;
     explicit OperatorAlternationPTNode(SourceReference source, OperatorType operatorType) : GenericTokenPTNode(
             std::move(source)), operatorType(operatorType) {};
+    [[nodiscard]] OperatorType getOperatorType() const;
+private:
+    OperatorType operatorType;
 };
 
 struct NonTerminalPTNode : public PTNode {
-    std::vector<std::unique_ptr<PTNode>> children;
 
     explicit NonTerminalPTNode(SourceReference source, PTNode::Type type, std::vector<std::unique_ptr<PTNode>> children)
-            :
-            PTNode(type, std::move(source)), children(std::move(children)) {};
+            : PTNode(type, std::move(source)), children(std::move(children)) {};
+    void accept(PTVisitor& v) override  {
+        v.visit(*this);
+    }
+    // [[nodiscard]] std::vector<std::unique_ptr<PTNode>> getChildren() const;
+    std::vector<std::unique_ptr<PTNode>> children;
 };
 
 struct NonTerminalAlternationPTNode : public NonTerminalPTNode {
@@ -113,35 +126,6 @@ struct NonTerminalAlternationPTNode : public NonTerminalPTNode {
     // TODO handle optional and repeating children
 };
 
-// TODO: decide: should we calculate the childrenCount on request (recursively)?
-/*
-class UnaryExprNode : PTNode {
-public:
-    explicit UnaryExprNode(SourceReference& source, std::vector<PTNode>& children, unsigned childrenCount) : PTNode(
-            PTNode::Type::UnaryExpr, source), children(children), childrenCount(childrenCount) {};
-    std::vector<PTNode> children;
-    unsigned childrenCount;
-};
-
-class PrimaryExprNode : PTNode {
-public:
-    explicit PrimaryExprNode(SourceReference& source, std::vector<PTNode>& children) : PTNode(PTNode::Type::PrimaryExpr,
-                                                                                            source), children(children),
-                                                                                     childrenCount(childrenCount) {};
-    std::vector<PTNode> children;
-    unsigned childrenCount;
-    PTNode::Type ownType; // because of alternation this can be either identifier, literal or "(" additive-expression ")". TODO: maybe do not use PTNOde::Type, because parenthesized expression not explicitly a type there
-};
-
-class FunctionDefinitionNode : PTNode {
-public:
-    explicit FunctionDefinitionNode(SourceReference source, std::vector<PTNode> children) : PTNode(
-            PTNode::Type::FunctionDefinition, source), children(children), childrenCount(childrenCount) {};
-    std::vector<PTNode> children;
-    unsigned childrenCount;
-    PTNode::Type ownType; // because of alternation this can be either identifier, literal or "(" additive-expression ")". TODO: maybe do not use PTNOde::Type, because parenthesized expression not explicitly a type there
-};*/
-
 //---------------------------------------------------------------------------
-} //namespace pljit
+} //namespace pljit::parser
 //---------------------------------------------------------------------------

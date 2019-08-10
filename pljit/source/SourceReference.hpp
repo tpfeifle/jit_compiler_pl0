@@ -8,13 +8,13 @@ namespace pljit {
 class SourceReference {
     SourceCode code;
 public:
-    SourceReference(int lineNum, int charPos, int length, SourceCode& code);
+    SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code);
 
     void printContext(const std::string& message);
     std::string getText();
-    int lineNum;
-    int charPos;
-    int length;
+    unsigned lineNum;
+    unsigned charPos;
+    unsigned length;
     std::string toString() {
         return std::to_string(lineNum) + std::to_string(charPos) + std::to_string(length);
     }

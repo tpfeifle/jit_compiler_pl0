@@ -4,15 +4,13 @@
 #include "Token.hpp"
 #include <memory>
 //---------------------------------------------------------------------------
-namespace pljit {
+namespace pljit::lexer {
 //---------------------------------------------------------------------------
 class Lexer {
 public:
     std::vector<Token> tokens;
 
     Lexer(SourceCode& code) : code(code), currentPos(0), currentLine(0) {}
-
-    //void scanCode();
 
     std::unique_ptr<Token> next();
 

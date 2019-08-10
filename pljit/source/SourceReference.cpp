@@ -7,7 +7,7 @@
 namespace pljit {
 //---------------------------------------------------------------------------
 // TODO: maybe use offset instead of lineNum, charPos
-SourceReference::SourceReference(int lineNum, int charPos, int length, SourceCode& code) : code(code), lineNum(lineNum),
+SourceReference::SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code) : code(code), lineNum(lineNum),
                                                                                            charPos(charPos),
                                                                                            length(length) {
     /*assert(length > 0);

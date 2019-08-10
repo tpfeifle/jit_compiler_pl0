@@ -13,27 +13,21 @@
 namespace pljit::ast {
 //---------------------------------------------------------------------------
 class AST {
-    std::unique_ptr<ASTNode> analyzeStatement(NonTerminalPTNode* node);
+    std::unique_ptr<StatementAST> analyzeStatement(parser::NonTerminalPTNode* node);
 
-    std::unique_ptr<ASTNode> analyzeAdditiveExpression(NonTerminalPTNode* node);
+    std::unique_ptr<ExpressionAST> analyzeAdditiveExpression(parser::NonTerminalPTNode* node);
 
-    std::unique_ptr<ASTNode> analyzeMultiplicativeExpression(NonTerminalPTNode* node);
+    std::unique_ptr<ExpressionAST> analyzeMultiplicativeExpression(parser::NonTerminalPTNode* node);
 
-    std::unique_ptr<ASTNode> analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type type);
+    void analyzeDeclarations(parser::NonTerminalPTNode* node, Symbol::Type type);
 
-    std::unique_ptr<ASTNode> analyzeConstDeclarations(NonTerminalPTNode* node, Symbol::Type type);
+    void analyzeConstDeclarations(parser::NonTerminalPTNode* node, Symbol::Type type);
 
 public:
 
-    std::unique_ptr<ASTNode> analyzeParseTree(std::shared_ptr<PTNode> root);
-
-    std::unordered_map<std::string, Symbol> symbolTable{};
-};
-
-
-class DotOutputAST : public VisitorAST {
-public:
-    void visitPTNode(ASTNode* node);
+    std::unique_ptr<FunctionAST> analyzeParseTree(std::shared_ptr<parser::PTNode> root);
+    unsigned currentSymbolId = 0;
+    std::unordered_map<std::string, std::pair<Symbol, unsigned>> symbolTable{};
 };
 //---------------------------------------------------------------------------
 } //namespace pljit::ast

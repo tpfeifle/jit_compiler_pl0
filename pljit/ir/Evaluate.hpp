@@ -7,7 +7,7 @@ namespace pljit {
 //---------------------------------------------------------------------------
 class Evaluate {
 public:
-    explicit Evaluate(std::unordered_map<std::string, pljit::ast::Symbol> &symbolTable){
+    explicit Evaluate(std::unordered_map<std::string, std::pair<pljit::ast::Symbol, unsigned>> &symbolTable){
         for(const auto &variable: symbolTable) {
             variables.emplace(std::pair<std::string, int>(variable.first, 0)); //TODO check if all should be initialized with zero (also vars?
         }

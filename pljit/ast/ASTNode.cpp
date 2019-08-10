@@ -12,7 +12,7 @@ int FunctionAST::execute(pljit::Evaluate& evaluate) {
     for (auto&& child: children) {
         child->execute(evaluate);
     }
-    return evaluate.variables.at("RETURN");
+    return evaluate.variables.at("Return");
 }
 //---------------------------------------------------------------------------
 int LiteralAST::execute(pljit::Evaluate& evaluate) {
@@ -32,25 +32,14 @@ int IdentifierAST::execute(pljit::Evaluate& evaluate) {
     return temp;
 }
 //---------------------------------------------------------------------------
-int ConstDeclAST::execute(pljit::Evaluate& evaluate) {
-    for (auto&& child: children) {
-        child->execute(evaluate);
-    }
-    return 0; // TODO not needed
-}
-//---------------------------------------------------------------------------
+
 int AssignmentAST::execute(pljit::Evaluate& evaluate) {
     evaluate.variables[identifier->identifier] = expression->execute(evaluate);
     return 0; // TODO not needed
 }
 //---------------------------------------------------------------------------
-int ConstAssignmentAST::execute(pljit::Evaluate& evaluate) {
-    evaluate.variables[identifier->identifier] = value->value;
-    return 0; // TODO not needed
-}
-//---------------------------------------------------------------------------
 int ReturnStatementAST::execute(pljit::Evaluate& evaluate) {
-    evaluate.variables.insert({"RETURN", expression->execute(evaluate)});
+    evaluate.variables.insert({"Return", expression->execute(evaluate)});
     return 0; // TODO: actually not really needed
 }
 //---------------------------------------------------------------------------

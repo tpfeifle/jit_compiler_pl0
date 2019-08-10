@@ -1,8 +1,12 @@
 set(TEST_SOURCES
     # add your *.cpp files here
+    Tester.cpp
     parser/TestParser.cpp
     lexer/TestLexer.cpp
-    Tester.cpp
+    ast/TestAst.cpp
+    ir/TestOptimizationDeadCode.cpp
+    ir/TestEvaluate.cpp
+    ir/TestOptimizationConstPropagation.cpp
     )
 
 add_executable(tester ${TEST_SOURCES})
