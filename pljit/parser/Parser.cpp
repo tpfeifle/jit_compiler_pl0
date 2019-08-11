@@ -396,8 +396,9 @@ std::unique_ptr<PTNode> Parser::parseMultiplicativeExpr()
         }
         children.emplace_back(std::move(multiplicativeExpr));
     }
-    return std::make_unique<NonTerminalPTNode>(childrenSourceReference(children),
+    std::unique_ptr<NonTerminalPTNode> res = std::make_unique<NonTerminalPTNode>(childrenSourceReference(children),
                                                PTNode::Type::MultiplicativeExpr, std::move(children));
+    return res;
 }
 //---------------------------------------------------------------------------
 std::unique_ptr<PTNode> Parser::parseUnaryExpr()
