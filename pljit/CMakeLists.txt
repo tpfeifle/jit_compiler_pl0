@@ -5,7 +5,7 @@ set(PLJIT_SOURCES
         ast/SemanticAnalyzer.cpp
         ast/ASTNode.cpp
         ast/DotASTVisitor.cpp
-        ir/Evaluate.cpp
+        ir/EvalContext.cpp
         lexer/Lexer.cpp
         parser/Parser.cpp
         parser/DotPTVisitor.cpp

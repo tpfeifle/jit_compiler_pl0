@@ -11,22 +11,22 @@ int64_t LiteralAST::getValue() const {
     return value;
 }
 //---------------------------------------------------------------------------
-int64_t FunctionAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t FunctionAST::execute(pljit_ir::EvalContext& evaluate)
 // Get the return value of the function in the provided context
 {
     for (auto&& child: children) {
         child->execute(evaluate);
     }
-    return evaluate.variables.at("Return");
+    return evaluate.parameters.at("Return");
 }
 //---------------------------------------------------------------------------
-int64_t LiteralAST::execute(pljit_ir::Evaluate&)
+int64_t LiteralAST::execute(pljit_ir::EvalContext&)
 // Get the value of the literal
 {
     return value;
 }
 //---------------------------------------------------------------------------
-int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t UnaryAST::execute(pljit_ir::EvalContext& evaluate)
 // Get the return value of the unary node in the provided context
 {
     if (sign == SignType::Plus) {
@@ -36,28 +36,28 @@ int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate)
     }
 }
 //---------------------------------------------------------------------------
-int64_t IdentifierAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t IdentifierAST::execute(pljit_ir::EvalContext& evaluate)
 // Get the value of the identifier in the provided context
 {
-    return evaluate.variables.at(identifier);
+    return evaluate.parameters.at(identifier);
 }
 //---------------------------------------------------------------------------
 
-int64_t AssignmentAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t AssignmentAST::execute(pljit_ir::EvalContext& evaluate)
 // Update the evaluation context with the assignment
 {
-    evaluate.variables[identifier->identifier] = expression->execute(evaluate);
+    evaluate.parameters[identifier->identifier] = expression->execute(evaluate);
     return 0;
 }
 //---------------------------------------------------------------------------
-int64_t ReturnStatementAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t ReturnStatementAST::execute(pljit_ir::EvalContext& evaluate)
 // Update the evaluation context with the return value
 {
-    evaluate.variables.insert({"Return", expression->execute(evaluate)});
+    evaluate.parameters.insert({"Return", expression->execute(evaluate)});
     return 0;
 }
 //---------------------------------------------------------------------------
-int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate)
+int64_t BinaryOperationAST::execute(pljit_ir::EvalContext& evaluate)
 // Return the result of the binary operation in the provided context
 {
     switch (type) {
@@ -72,7 +72,7 @@ int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate)
             if (temp == 0) {
                 std::cout << "Division by zero error" << std::endl; // TODO
                 evaluate.errorCode = 1;
-                return -1; // TODO
+                return 0;
             }
             return left->execute(evaluate) / temp;
     }

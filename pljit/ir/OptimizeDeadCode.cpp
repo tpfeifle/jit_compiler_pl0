@@ -13,12 +13,7 @@ void OptimizeDeadCode::visit(pljit_ast::FunctionAST& functionAst) {
         }
     }
 }
-void OptimizeDeadCode::visit(pljit_ast::AssignmentAST&) {}
-void OptimizeDeadCode::visit(pljit_ast::ReturnStatementAST&) {}
-void OptimizeDeadCode::visit(pljit_ast::BinaryOperationAST&) {}
-void OptimizeDeadCode::visit(pljit_ast::UnaryAST&) {}
-void OptimizeDeadCode::visit(pljit_ast::LiteralAST&) {}
-void OptimizeDeadCode::visit(pljit_ast::IdentifierAST&) {}
+
 //---------------------------------------------------------------------------
 } // namespace pljit_ir
 //---------------------------------------------------------------------------

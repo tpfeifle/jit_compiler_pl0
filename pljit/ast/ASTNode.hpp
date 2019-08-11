@@ -5,7 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
-#include <pljit/ir/Evaluate.hpp>
+#include <pljit/ir/EvalContext.hpp>
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
@@ -31,7 +31,7 @@ public:
     /// Accept method for the visitor pattern
     virtual void accept(ASTVisitor& v) = 0;
     /// Evaluates the node with the provided context
-    virtual int64_t execute(pljit_ir::Evaluate& evaluate) = 0;
+    virtual int64_t execute(pljit_ir::EvalContext& evaluate) = 0;
     /// Get the specific node type
     [[nodiscard]] Type getType() const;
     /// Destructor
@@ -66,7 +66,7 @@ struct FunctionAST : ASTNode {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ struct LiteralAST : ExpressionAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
     /// Get the value of the literal
     [[nodiscard]] int64_t getValue() const;
 private:
@@ -99,7 +99,7 @@ struct UnaryAST : ExpressionAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ struct IdentifierAST : ExpressionAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ struct BinaryOperationAST : ExpressionAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ struct AssignmentAST : public StatementAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 
 //---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ struct ReturnStatementAST : StatementAST {
     /// Accept for the visitor pattern
     void accept(ASTVisitor& v) override;
     /// Evaluates the node with the provided context
-    int64_t execute(pljit_ir::Evaluate& evaluate) override;
+    int64_t execute(pljit_ir::EvalContext& evaluate) override;
 };
 //---------------------------------------------------------------------------
 }  // namespace pljit_ast

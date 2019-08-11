@@ -17,7 +17,6 @@ public:
     void visit(UnaryAST& node) override;
     void visit(LiteralAST& node) override;
     void visit(IdentifierAST& node) override;
-
 };
 //---------------------------------------------------------------------------
 } // namespace pljit_ast

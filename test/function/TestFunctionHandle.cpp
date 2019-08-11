@@ -5,12 +5,93 @@
 //---------------------------------------------------------------------------
 namespace pljit_function {
 //---------------------------------------------------------------------------
-void funcWrapper(FunctionHandle functionHandle, unsigned a, unsigned b, const std::vector<int64_t>& expectedRes) {
+void funcWrapper(FunctionHandle functionHandle, unsigned a, unsigned b, const std::vector<int64_t>& expectedRes)
+// Wrapper for the multi-thread tests that gets a list of the expectedResults and checks if the gotten result
+// is in that list
+{
     int64_t res = functionHandle(a, b);
-    assert(std::find(expectedRes.begin(), expectedRes.end(), res) != expectedRes.end());
-    // std::cout << res << std::endl;
+    EXPECT_NE(std::find(expectedRes.begin(), expectedRes.end(), res), expectedRes.end());
 }
 
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestSimpleReturn) {
+    Pljit jit;
+    auto func = jit.registerFunction("BEGIN\n"
+                                     "    RETURN 12\n"
+                                     "END.\n");
+    auto result = func();
+    EXPECT_EQ(result, 12);
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestComplexCalculation) {
+    Pljit jit;
+    auto func = jit.registerFunction("BEGIN\n"
+                                     "    RETURN 12 * (4 - 1 * 32 / 1) - 3\n"
+                                     "END.\n");
+    auto result = func();
+    EXPECT_EQ(result, -339);
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestUsingVarAndConst) {
+    Pljit jit;
+    auto func = jit.registerFunction("VAR I, cost;\n"
+                                     "CONST U = 12, R = 4;\n"
+                                     "BEGIN\n"
+                                     "    I := U / R;\n"
+                                     "    cost := I * 51;\n"
+                                     "    RETURN cost - 12\n"
+                                     "END.\n");
+    auto result = func();
+    EXPECT_EQ(result, 141);
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestVarRedefinition) {
+    Pljit jit;
+    auto func = jit.registerFunction("PARAM foo, final;\n"
+                                     "VAR I, cost;\n"
+                                     "CONST U = 12, R = 4;\n"
+                                     "BEGIN\n"
+                                     "    I := 200;\n"
+                                     "    I := 200 * U + R;\n"
+                                     "    I := I - foo;\n"
+                                     "    cost := I * (final + I);\n"
+                                     "    RETURN cost / R\n"
+                                     "END.\n");
+    auto result = func(3, 4);
+    EXPECT_EQ(result, 1443601);
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestMissingParameterInCall) {
+    Pljit jit;
+    auto func = jit.registerFunction("PARAM foo, final;\n"
+                                     "VAR I, cost;\n"
+                                     "CONST U = 12, R = 4;\n"
+                                     "BEGIN\n"
+                                     "    I := 200;\n"
+                                     "    I := 200 * U + R;\n"
+                                     "    I := I - foo;\n"
+                                     "    cost := I * (final + I);\n"
+                                     "    RETURN cost / R\n"
+                                     "END.\n");
+    testing::internal::CaptureStderr();
+    func();
+    std::string error = testing::internal::GetCapturedStderr();
+    EXPECT_EQ(error, "Error: missing parameter for executing the function\n");
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestParameters) {
+    Pljit jit;
+    auto func = jit.registerFunction("PARAM U, R;\n"
+                                     "VAR I, cost;\n"
+                                     "BEGIN\n"
+                                     "    I := U / R;\n"
+                                     "    cost := I * 51;\n"
+                                     "    RETURN cost - 12\n"
+                                     "END.\n");
+    auto result = func(20, 5);
+    EXPECT_EQ(result, 192);
+}
+//---------------------------------------------------------------------------
 TEST(Function, TestConcurrent) {
     Pljit jit;
     auto func = jit.registerFunction("PARAM a, b;\n"
@@ -41,8 +122,8 @@ TEST(Function, TestMultipleFunc) {
                                       "END.\n");
     auto res = func(1, 10);
     auto res2 = func2(3, 5);
-    assert(res == 11);
-    assert(res2 == 14);
+    EXPECT_EQ(res, 11);
+    EXPECT_EQ(res2, 14);
 }
 //---------------------------------------------------------------------------
 } // namespace pljit_function

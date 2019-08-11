@@ -9,35 +9,28 @@
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-std::unique_ptr<FunctionAST> getAstRoot2(const std::string& codeText) { // TODO fix linker error correctly
-    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    pljit_parser::Parser parser(code);
-    std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    if (!pt) {
-        exit(-1);
-    }
-    SemanticAnalyzer ast = SemanticAnalyzer();
-    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
-    return astRoot;
-}
-//---------------------------------------------------------------------------
-std::string getDotOutput2(const std::unique_ptr<FunctionAST>& astRoot) { //TODO s.o.
-    testing::internal::CaptureStdout();
-    DotASTVisitor visitor = DotASTVisitor();
-    visitor.visit(*astRoot);
-    return testing::internal::GetCapturedStdout();
-}
-//---------------------------------------------------------------------------
 TEST(Ir, TestDeadCode) {
     std::string codeText = "PARAM foo;\n"
                            "BEGIN\n"
                            "    RETURN 1;\n"
                            "    foo := 12\n"
                            "END.\n";
-    auto astRoot = getAstRoot2(codeText);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    pljit_parser::Parser parser(code);
+    std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    ASSERT_NE(pt, nullptr);
+    SemanticAnalyzer ast = SemanticAnalyzer();
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
+    ASSERT_NE(astRoot, nullptr);
+    // Optimize
     pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
-    optimizeDeadCode.visit(*astRoot);
-    std::string output = getDotOutput2(astRoot);
+    optimizeDeadCode.optimizeAST(*astRoot);
+
+    // Compare output
+    testing::internal::CaptureStdout();
+    DotASTVisitor visitor = DotASTVisitor();
+    visitor.visit(*astRoot);
+    std::string output = testing::internal::GetCapturedStdout();
     std::string expectedOutput = "AST0[label=\"Function\"];\n"
                                  "AST0 -> AST1\n"
                                  "AST1[label=\"Return\"];\n"

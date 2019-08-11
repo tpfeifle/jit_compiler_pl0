@@ -1,31 +1,33 @@
 #pragma once
-
+//---------------------------------------------------------------------------
 #include <string>
-#include <pljit/source/SourceCode.hpp>
-#include <pljit/ast/ASTNode.hpp>
-#include <pljit/ast/SemanticAnalyzer.hpp>
-#include <pljit/ir/OptimizeConstPropagation.hpp>
-#include <pljit/ir/OptimizeDeadCode.hpp>
-#include <pljit/lexer/Lexer.hpp>
-#include <pljit/parser/Parser.hpp>
-#include <mutex>
 #include "PljitFunction.hpp"
 //---------------------------------------------------------------------------
 namespace pljit_function {
 //---------------------------------------------------------------------------
+/// A lightweight handle for the functions stored in Pljit
 class FunctionHandle {
+    /// Pointer to the function
     PljitFunction* function;
 public:
-    template<typename... Sizes>
-    int operator()(Sizes... sizes) {
-        return function->execute(sizes...);
+
+    /// Call operator of the handle
+    template<typename... Params>
+    int operator()(Params... params) {
+        return function->execute(params...);
     }
+
+    /// Constructor
     FunctionHandle(PljitFunction* function) : function(function) {};
 };
-
+//---------------------------------------------------------------------------
+/// JIT-class: handles registering functions and their source code
 class Pljit {
 public:
+    /// Interface to register new functions with their source code
     FunctionHandle registerFunction(const std::string& codeText);
+
+    /// Store for the functions
     std::vector<std::unique_ptr<PljitFunction>> functions;
 };
 //---------------------------------------------------------------------------

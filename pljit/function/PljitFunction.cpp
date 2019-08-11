@@ -1,33 +1,25 @@
 #include <pljit/lexer/Lexer.hpp>
 #include "PljitFunction.hpp"
-
 //---------------------------------------------------------------------------
 namespace pljit_function {
 //---------------------------------------------------------------------------
 void PljitFunction::compile() {
+    // Compiling
     pljit_parser::Parser parser = pljit_parser::Parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    if (!pt) {
-        std::cout << "Parser failed" << std::endl;
+    if(!pt) {
         return;
     }
     astRoot = ast.analyzeParseTree(std::move(pt));
     if (!astRoot) {
-        std::cout << "Abstract Syntax Tree failed" << std::endl;
         return;
     }
 
+    // Optimizations
     pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
-    optimizeDeadCode.visit(*astRoot);
-
-    std::unordered_map<std::string, int> constValues{};
-    for (const auto& el: ast.symbolTable) {
-        if (el.second.first.type == pljit_ast::Symbol::Type::Const) {
-            constValues.insert({el.first, el.second.first.value});
-        }
-    }
-    pljit_ir::OptimizeConstPropagation optimizeConstPropagation = pljit_ir::OptimizeConstPropagation(constValues);
-    optimizeConstPropagation.visit(*astRoot);
+    optimizeDeadCode.optimizeAST(*astRoot);
+    pljit_ir::OptimizeConstPropagation optimizeConstPropagation = pljit_ir::OptimizeConstPropagation(ast.symbolTable);
+    optimizeConstPropagation.optimizeAST(*astRoot);
 }
 } // namespace pljit_function
 //---------------------------------------------------------------------------

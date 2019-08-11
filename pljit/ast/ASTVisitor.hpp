@@ -5,7 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
-#include <pljit/ir/Evaluate.hpp>
+#include <pljit/ir/EvalContext.hpp>
 #include "ASTNode.hpp"
 //---------------------------------------------------------------------------
 namespace pljit_ast {

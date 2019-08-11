@@ -6,7 +6,6 @@ set(TEST_SOURCES
     lexer/TestLexer.cpp
     ast/TestAst.cpp
     ir/TestOptimizationDeadCode.cpp
-    ir/TestEvaluate.cpp
     ir/TestOptimizationConstPropagation.cpp
     )
 
