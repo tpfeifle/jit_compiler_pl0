@@ -42,6 +42,16 @@ TEST(Lexer, TestParametersAll) {
     }
 }
 //---------------------------------------------------------------------------
+TEST(Lexer, TestUnary) {
+    std::string codeText = "RETURN -2 * -a";
+    std::vector<Token> lexerTokens = getLexerTokens(codeText);
+    std::vector<TT> expectedTypes = {TT::Return, TT::Minus, TT::Literal, TT::Multiply, TT::Minus, TT::Identifier};
+    for (unsigned long i = 0; i < lexerTokens.size(); i++) {
+        ASSERT_TRUE(expectedTypes.size() > i);
+        EXPECT_EQ(lexerTokens[i].getType(), expectedTypes[i]);
+    }
+}
+//---------------------------------------------------------------------------
 TEST(Lexer, TestParametersNoVar) {
     std::string codeText = "PARAM width, height, depth;\n"
                            "CONST volume = 1, foo = 20;";

@@ -27,7 +27,10 @@ class PljitFunction {
     bool isCompiled = false;
 
     /// Mutex to enable access from multiple threads to compile the function
-    std::mutex compileMutex; // TODO check if compileMutex enough or runMutex needed
+    std::mutex compileMutex;
+
+    /// Mutex to enable access from multiple threads while using cerr
+    std::mutex errorLoggingMutex;
 public:
     /// Constructor
     explicit PljitFunction(pljit_source::SourceCode code) : code(std::move(code)) {}
@@ -38,7 +41,9 @@ public:
         std::vector<unsigned> args = {static_cast<unsigned>(params)...};
         compileMutex.lock();
         if (!isCompiled) {
-            this->compile();
+            if(this->compile() != 0) {
+                return 0;
+            }
             isCompiled = true;
         }
         compileMutex.unlock();
@@ -48,18 +53,30 @@ public:
         for (auto& el:ast.symbolTable) {
             if (el.second.first.type == pljit_ast::Symbol::Type::Param) {
                 if (args.size() < el.second.second + 1) {
+                    errorLoggingMutex.lock();
                     std::cerr << "Error: missing parameter for executing the function" << std::endl;
+                    errorLoggingMutex.unlock();
                     return 0;
                 }
                 evaluate.parameters[el.first] = args[el.second.second];
             }
         }
         astRoot->execute(evaluate);
-        return evaluate.parameters["Return"];
+        if(evaluate.errorCode) {
+            switch(evaluate.errorCode) {
+                case 1:
+                    errorLoggingMutex.lock();
+                    std::cerr << "Division by zero error" << std::endl;
+                    errorLoggingMutex.unlock();
+            }
+            return 0;
+        } else {
+            return evaluate.parameters["Return"];
+        }
     }
 
     /// Compiles the function
-    void compile();
+    int compile();
 };
 //---------------------------------------------------------------------------
 } // namespace pljit_function

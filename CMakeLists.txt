@@ -21,18 +21,6 @@ if (NOT GTEST_FOUND)
    include(googletest)
 endif ()
 
-
-#if (NOT GTEST_FOUND)
-#    message(STATUS "Adding bundled Google Test")
-#    set(BUILD_GMOCK OFF CACHE BOOL INTERNAL)
-#    set(INSTALL_GTEST OFF CACHE BOOL INTERNAL)
-#
-#    add_subdirectory(thirdparty/google/googletest)
-#
-#    add_library(GTest::GTest ALIAS gtest)
-#endif ()
-
-
 add_custom_target(lint)
 
 add_subdirectory(pljit)

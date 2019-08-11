@@ -18,10 +18,10 @@ TEST(Ir, TestDeadCode) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     pljit_parser::Parser parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    ASSERT_NE(pt, nullptr);
+    EXPECT_NE(pt, nullptr);
     SemanticAnalyzer ast = SemanticAnalyzer();
     std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
-    ASSERT_NE(astRoot, nullptr);
+    EXPECT_NE(astRoot, nullptr);
     // Optimize
     pljit_ir::OptimizeDeadCode optimizeDeadCode = pljit_ir::OptimizeDeadCode();
     optimizeDeadCode.optimizeAST(*astRoot);
@@ -36,7 +36,7 @@ TEST(Ir, TestDeadCode) {
                                  "AST1[label=\"Return\"];\n"
                                  "AST1 -> AST2\n"
                                  "AST2[label=\" 1 \"];\n";
-    assert(output == expectedOutput);
+    EXPECT_EQ(output, expectedOutput);
 }
 //---------------------------------------------------------------------------
 } // namespace pljit_ast

@@ -3,16 +3,16 @@
 //---------------------------------------------------------------------------
 namespace pljit_function {
 //---------------------------------------------------------------------------
-void PljitFunction::compile() {
+int PljitFunction::compile() {
     // Compiling
     pljit_parser::Parser parser = pljit_parser::Parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if(!pt) {
-        return;
+        return -1;
     }
     astRoot = ast.analyzeParseTree(std::move(pt));
     if (!astRoot) {
-        return;
+        return -2;
     }
 
     // Optimizations
@@ -20,6 +20,8 @@ void PljitFunction::compile() {
     optimizeDeadCode.optimizeAST(*astRoot);
     pljit_ir::OptimizeConstPropagation optimizeConstPropagation = pljit_ir::OptimizeConstPropagation(ast.symbolTable);
     optimizeConstPropagation.optimizeAST(*astRoot);
+    return 0;
 }
+//---------------------------------------------------------------------------
 } // namespace pljit_function
 //---------------------------------------------------------------------------

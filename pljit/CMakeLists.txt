@@ -1,5 +1,4 @@
 set(PLJIT_SOURCES
-    # add your *.cpp files here
         function/PljitFunction.cpp
         function/pljit.cpp
         ast/SemanticAnalyzer.cpp
@@ -20,7 +19,7 @@ set(PLJIT_SOURCES
 add_library(pljit_core STATIC ${PLJIT_SOURCES})
 target_include_directories(pljit_core PUBLIC ${CMAKE_SOURCE_DIR})
 
-#target_link_libraries(pljit_core PUBLIC Threads::Threads)
+target_link_libraries(pljit_core PUBLIC Threads::Threads)
 
 add_clang_tidy_target(lint_pljit_core ${PLJIT_SOURCES})
 add_dependencies(lint lint_pljit_core)

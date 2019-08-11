@@ -25,6 +25,9 @@ std::unique_ptr<NonTerminalPTNode> Parser::parseFunctionDefinition()
 // Public interface to create the parse-treee of the function definition
 {
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
     std::unique_ptr<PTNode> paramDeclaration = parseParameterDeclaration();
     if (errorDuringDeclaration) { // parseParameterDeclaration sets this if encountered parsing-error
         return nullptr;
@@ -70,12 +73,15 @@ std::unique_ptr<PTNode> Parser::parseParameterDeclaration()
 // Return the parse-tree for the parameter-declaration from the token stream
 {
     std::vector<std::unique_ptr<PTNode>> children;
-    if (currentToken->getType() != pljit_lexer::Token::Type::Param) {
+    if (!currentToken || currentToken->getType() != pljit_lexer::Token::Type::Param) {
         return nullptr;
     }
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // param keyword
 
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
     std::unique_ptr<PTNode> declaratorList = parseDeclaratorList();
     if (!declaratorList) {
         return nullptr;
@@ -97,18 +103,21 @@ std::unique_ptr<PTNode> Parser::parseVariableDeclaration()
 // Return the parse-tree for the variable-declaration from the token stream
 {
     std::vector<std::unique_ptr<PTNode>> children;
-    if (currentToken->getType() != pljit_lexer::Token::Type::Var) {
+    if (!currentToken || currentToken->getType() != pljit_lexer::Token::Type::Var) {
         return nullptr;
     }
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // var keyword
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
 
     std::unique_ptr<PTNode> declaratorList = parseDeclaratorList();
     if (!declaratorList) {
         return nullptr;
     }
 
-    if (currentToken->getType() != pljit_lexer::Token::Type::Semicolon) {
+    if (!currentToken || currentToken->getType() != pljit_lexer::Token::Type::Semicolon) {
         currentToken->source.printContext("Expected semicolon");
         return nullptr;
     }
@@ -123,19 +132,22 @@ std::unique_ptr<PTNode> Parser::parseVariableDeclaration()
 std::unique_ptr<PTNode> Parser::parseConstDeclaration()
 // Return the parse-tree for the const-declaration from the token stream
 {
-    if (currentToken->getType() != pljit_lexer::Token::Type::Const) {
+    if (!currentToken || currentToken->getType() != pljit_lexer::Token::Type::Const) {
         return nullptr;
     }
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // const keyword
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
 
     std::unique_ptr<PTNode> declaratorList = parseInitDeclaratorList();
     if (!declaratorList) {
         return nullptr;
     }
 
-    if (currentToken->getType() != pljit_lexer::Token::Type::Semicolon) {
+    if (!currentToken || currentToken->getType() != pljit_lexer::Token::Type::Semicolon) {
         currentToken->source.printContext("Expected semicolon");
         return nullptr;
     }
@@ -158,10 +170,14 @@ std::unique_ptr<PTNode> Parser::parseDeclaratorList()
     children.emplace_back(std::make_unique<IdentifierPTNode>(currentToken->source));
 
     currentToken = lexer.next();
-    while (currentToken->getType() == pljit_lexer::Token::Type::Colon) {
+    while (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Colon) {
         children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source));
 
         currentToken = lexer.next();
+        if (!currentToken) {
+            errorDuringDeclaration = true;
+            return nullptr;
+        }
         if (currentToken->getType() != pljit_lexer::Token::Type::Identifier) {
             currentToken->source.printContext("Expected identifier");
             errorDuringDeclaration = true;
@@ -185,9 +201,12 @@ std::unique_ptr<PTNode> Parser::parseInitDeclaratorList()
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::move(initDeclarator));
 
-    while (currentToken->getType() == pljit_lexer::Token::Type::Colon) { // repeat
+    while (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Colon) { // repeat
         children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // colon separator
         currentToken = lexer.next();
+        if (!currentToken) {
+            return nullptr;
+        }
         std::unique_ptr<PTNode> declarator = parseInitDeclarator();
         if (!declarator) {
             return nullptr;
@@ -210,6 +229,10 @@ std::unique_ptr<PTNode> Parser::parseInitDeclarator()
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::make_unique<IdentifierPTNode>(currentToken->source)); // identifier
     currentToken = lexer.next();
+    if (!currentToken) {
+        errorDuringDeclaration = true;
+        return nullptr;
+    }
 
     if (currentToken->getType() != pljit_lexer::Token::Type::Equal) {
         currentToken->source.printContext("Expected equal sign");
@@ -219,6 +242,10 @@ std::unique_ptr<PTNode> Parser::parseInitDeclarator()
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // equal sign
 
     currentToken = lexer.next();
+    if (!currentToken) {
+        errorDuringDeclaration = true;
+        return nullptr;
+    }
     if (currentToken->getType() != pljit_lexer::Token::Type::Literal) {
         currentToken->source.printContext("Expected literal");
         errorDuringDeclaration = true;
@@ -242,6 +269,9 @@ std::unique_ptr<PTNode> Parser::parseCompoundStatement()
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // beginKeyword
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
 
     std::unique_ptr<PTNode> statementList = parseStatementList();
     if (!statementList) {
@@ -269,9 +299,12 @@ std::unique_ptr<PTNode> Parser::parseStatementList()
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::move(statement));
 
-    while (currentToken->getType() == pljit_lexer::Token::Type::Semicolon) { // repeat
+    while (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Semicolon) { // repeat
         children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // semicolon separator
         currentToken = lexer.next();
+        if (!currentToken) {
+            return nullptr;
+        }
 
         std::unique_ptr<PTNode> statementRepeat = parseStatement();
         if (!statementRepeat) {
@@ -288,9 +321,12 @@ std::unique_ptr<PTNode> Parser::parseStatement()
 {
     std::vector<std::unique_ptr<PTNode>> children;
 
-    if (currentToken->getType() == pljit_lexer::Token::Type::Return) {
+    if (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Return) {
         children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source));
         currentToken = lexer.next();
+        if (!currentToken) {
+            return nullptr;
+        }
         std::unique_ptr<PTNode> additiveExpr = parseAdditiveExpr();
         if (!additiveExpr) {
             return nullptr;
@@ -319,13 +355,18 @@ std::unique_ptr<PTNode> Parser::parseAssignmentExpr()
     children.emplace_back(std::make_unique<IdentifierPTNode>(currentToken->source)); // identifier
 
     currentToken = lexer.next();
+    if (!currentToken) {
+        return nullptr;
+    }
     if (currentToken->getType() != pljit_lexer::Token::Type::Assignment) {
         currentToken->source.printContext("Expected assignment");
         return nullptr;
     }
     children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source)); // assignment
     currentToken = lexer.next();
-
+    if (!currentToken) {
+        return nullptr;
+    }
     std::unique_ptr<PTNode> additiveExpr = parseAdditiveExpr();
     if (!additiveExpr) {
         return nullptr;
@@ -346,8 +387,8 @@ std::unique_ptr<PTNode> Parser::parseAdditiveExpr()
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::move(multiplicativeExpr));
 
-    if (currentToken->getType() == pljit_lexer::Token::Type::Plus ||
-        currentToken->getType() == pljit_lexer::Token::Type::Minus) {
+    if (currentToken && (currentToken->getType() == pljit_lexer::Token::Type::Plus ||
+                         currentToken->getType() == pljit_lexer::Token::Type::Minus)) {
 
         OperatorAlternationPTNode::OperatorType type;
         if (currentToken->getType() == pljit_lexer::Token::Type::Plus) {
@@ -359,6 +400,9 @@ std::unique_ptr<PTNode> Parser::parseAdditiveExpr()
                 std::make_unique<OperatorAlternationPTNode>(currentToken->source, type));
 
         currentToken = lexer.next();
+        if(!currentToken) {
+            return nullptr;
+        }
         std::unique_ptr<PTNode> additiveExpr = parseAdditiveExpr();
         if (!additiveExpr) {
             return nullptr;
@@ -378,8 +422,8 @@ std::unique_ptr<PTNode> Parser::parseMultiplicativeExpr()
     }
     std::vector<std::unique_ptr<PTNode>> children;
     children.emplace_back(std::move(unaryExpr));
-    if (currentToken->getType() == pljit_lexer::Token::Type::Multiply ||
-        currentToken->getType() == pljit_lexer::Token::Type::Divide) {
+    if (currentToken && (currentToken->getType() == pljit_lexer::Token::Type::Multiply ||
+                         currentToken->getType() == pljit_lexer::Token::Type::Divide)) {
 
         OperatorAlternationPTNode::OperatorType type;
         if (currentToken->getType() == pljit_lexer::Token::Type::Multiply) {
@@ -390,6 +434,9 @@ std::unique_ptr<PTNode> Parser::parseMultiplicativeExpr()
         children.emplace_back(
                 std::make_unique<OperatorAlternationPTNode>(currentToken->source, type));
         currentToken = lexer.next();
+        if(!currentToken) {
+            return nullptr;
+        }
         std::unique_ptr<PTNode> multiplicativeExpr = parseMultiplicativeExpr();
         if (!multiplicativeExpr) {
             return nullptr;
@@ -397,7 +444,8 @@ std::unique_ptr<PTNode> Parser::parseMultiplicativeExpr()
         children.emplace_back(std::move(multiplicativeExpr));
     }
     std::unique_ptr<NonTerminalPTNode> res = std::make_unique<NonTerminalPTNode>(childrenSourceReference(children),
-                                               PTNode::Type::MultiplicativeExpr, std::move(children));
+                                                                                 PTNode::Type::MultiplicativeExpr,
+                                                                                 std::move(children));
     return res;
 }
 //---------------------------------------------------------------------------
@@ -405,18 +453,19 @@ std::unique_ptr<PTNode> Parser::parseUnaryExpr()
 // Return the parse-tree for an unary-expression from the token stream
 {
     std::vector<std::unique_ptr<PTNode>> children;
-    if (currentToken->getType() == pljit_lexer::Token::Type::Plus) { // optional
+    if (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Plus) { // optional
         children.emplace_back(
                 std::make_unique<OperatorAlternationPTNode>(currentToken->source, OperatorAlternationPTNode::Plus));
-        children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source));
         currentToken = lexer.next();
-    } else if (currentToken->getType() == pljit_lexer::Token::Type::Minus) { // optional
+    } else if (currentToken && currentToken->getType() == pljit_lexer::Token::Type::Minus) { // optional
         children.emplace_back(
                 std::make_unique<OperatorAlternationPTNode>(currentToken->source, OperatorAlternationPTNode::Minus));
-        children.emplace_back(std::make_unique<GenericTokenPTNode>(currentToken->source));
         currentToken = lexer.next();
     }
 
+    if(!currentToken) {
+        return nullptr;
+    }
     std::unique_ptr<PTNode> primaryExpr = parsePrimaryExpr();
     if (!primaryExpr) {
         return nullptr;
@@ -432,6 +481,9 @@ std::unique_ptr<PTNode> Parser::parsePrimaryExpr()
 // Return the parse-tree for a primary-expression from the token stream
 {
     std::vector<std::unique_ptr<PTNode>> children;
+    if(!currentToken) {
+        return nullptr;
+    }
     if (currentToken->getType() == pljit_lexer::Token::Type::Identifier) {
         children.emplace_back(std::make_unique<IdentifierPTNode>(currentToken->source));
     } else if (currentToken->getType() == pljit_lexer::Token::Type::Literal) {
@@ -443,12 +495,15 @@ std::unique_ptr<PTNode> Parser::parsePrimaryExpr()
         std::unique_ptr<pljit_lexer::Token> leftBracketToken = std::move(
                 currentToken); // potentially needed for error message later
         currentToken = lexer.next();
+        if(!currentToken) {
+            return nullptr;
+        }
 
         std::unique_ptr<PTNode> additiveExpr = parseAdditiveExpr();
         if (!additiveExpr) {
             return nullptr;
         }
-        if (currentToken->getType() != pljit_lexer::Token::Type::Right_Bracket) {
+        if (currentToken && currentToken->getType() != pljit_lexer::Token::Type::Right_Bracket) {
             currentToken->source.printContext("Expected ')'");
             leftBracketToken->source.printContext("to match this '('");
             return nullptr;

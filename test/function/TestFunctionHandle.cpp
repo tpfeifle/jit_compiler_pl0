@@ -79,6 +79,41 @@ TEST(Evaluate, TestMissingParameterInCall) {
     EXPECT_EQ(error, "Error: missing parameter for executing the function\n");
 }
 //---------------------------------------------------------------------------
+TEST(Evaluate, TestDivisionByZero) {
+    Pljit jit;
+    auto func = jit.registerFunction("BEGIN\n"
+                                     "    RETURN 12/0\n"
+                                     "END.\n");
+
+    testing::internal::CaptureStderr();
+    func();
+    std::string error = testing::internal::GetCapturedStderr();
+    EXPECT_EQ(error, "Division by zero error\n");
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestSyntaxError) {
+    Pljit jit;
+    //auto func = jit.registerFunction("?asd HELLO\n");
+    auto func = jit.registerFunction("PARAM a, ? b, \n");
+    testing::internal::CaptureStderr();
+    func();
+    std::string error = testing::internal::GetCapturedStderr();
+    EXPECT_EQ(error, "0:8:Unexpected character\nPARAM a, ? b, \n        ^\n");
+}
+//---------------------------------------------------------------------------
+TEST(Evaluate, TestSemanticError) {
+    Pljit jit;
+    auto func = jit.registerFunction("VAR a;\n"
+                                     "PARAM b;\n");
+
+    testing::internal::CaptureStderr();
+    func();
+    std::string error = testing::internal::GetCapturedStderr();
+    EXPECT_EQ(error, "1:0:Expected BEGIN keyword\n"
+                     "PARAM b;\n"
+                     "^~~~~\n");
+}
+//---------------------------------------------------------------------------
 TEST(Evaluate, TestParameters) {
     Pljit jit;
     auto func = jit.registerFunction("PARAM U, R;\n"
@@ -109,7 +144,30 @@ TEST(Function, TestConcurrent) {
     for (auto& thread : threads)
         thread.join();
 }
+//---------------------------------------------------------------------------
+TEST(Function, TestConcurrentComplicated) {
+    Pljit jit;
+    auto func = jit.registerFunction("PARAM a, foo;\n"
+                                     "VAR b, c;\n"
+                                     "CONST size = 3;\n"
+                                     "BEGIN\n"
+                                     " b := a * size - 12;\n"
+                                     " c := b / 3 + (2 * size);"
+                                     "    RETURN a - (b + c)\n"
+                                     "END.\n");
 
+
+    std::vector<std::thread> threads;
+    std::vector<int64_t> expectedRes = {-83,-1226,7,1,-104,7,22,127,-26};
+    std::vector<int64_t> parameters = {31, 412, 1, 3, 38, 1, -4, -39, 12};
+    for (int64_t param: parameters) {
+        threads.emplace_back(funcWrapper, func, param, 0, expectedRes);
+    }
+
+    for (auto& thread : threads)
+        thread.join();
+}
+//---------------------------------------------------------------------------
 TEST(Function, TestMultipleFunc) {
     Pljit jit;
     auto func = jit.registerFunction("PARAM a, b;\n"
@@ -126,5 +184,31 @@ TEST(Function, TestMultipleFunc) {
     EXPECT_EQ(res2, 14);
 }
 //---------------------------------------------------------------------------
+TEST(Function, TestComplicatedUnaryExpr) {
+    Pljit jit;
+    auto func = jit.registerFunction("PARAM a, b; BEGIN RETURN -2*+a -20*b END.\n");
+    auto res = func(3, 5);
+    EXPECT_EQ(res, -106);
+}
+//---------------------------------------------------------------------------
 } // namespace pljit_function
 //---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

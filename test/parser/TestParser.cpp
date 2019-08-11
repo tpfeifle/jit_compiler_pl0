@@ -100,7 +100,7 @@ TEST(ParserDefaultNodesTest, TestDetailed) {
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     Parser parser(code);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    assert((*pt).getType() == PTNode::Type::FunctionDefinition);
+    EXPECT_EQ(pt->getType(), PTNode::Type::FunctionDefinition);
     EXPECT_EQ(pt->children[0]->getType(), PTNode::Type::CompoundStatement);
     EXPECT_EQ(pt->children[1]->getType(), PTNode::Type::GenericToken);
 

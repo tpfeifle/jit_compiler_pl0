@@ -16,6 +16,9 @@ int64_t FunctionAST::execute(pljit_ir::EvalContext& evaluate)
 {
     for (auto&& child: children) {
         child->execute(evaluate);
+        if(evaluate.parameters.find("Return") != evaluate.parameters.end()) {
+            return evaluate.parameters.at("Return");
+        }
     }
     return evaluate.parameters.at("Return");
 }
@@ -70,7 +73,6 @@ int64_t BinaryOperationAST::execute(pljit_ir::EvalContext& evaluate)
         case OperationType::Divide:
             int64_t temp = right->execute(evaluate);
             if (temp == 0) {
-                std::cout << "Division by zero error" << std::endl; // TODO
                 evaluate.errorCode = 1;
                 return 0;
             }

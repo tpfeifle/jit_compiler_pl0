@@ -15,7 +15,7 @@ public:
     std::unordered_map<std::string, int64_t> parameters {};
 
     /// ErrorCode during the evaluation
-    unsigned errorCode = 0; // TODO
+    unsigned errorCode = 0;
 };
 //---------------------------------------------------------------------------
 } // namespace pljit_ir
