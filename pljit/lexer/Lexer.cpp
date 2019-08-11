@@ -6,47 +6,49 @@ namespace pljit_lexer {
 std::unique_ptr<Token> Lexer::next()
 // Provides the next Token from the source code
 {
+    unsigned beginningOfToken;
     while (currentLine < code.numberOfLines()) {
-        unsigned i = currentPos;
-        unsigned beginningOfToken = 0;
+        int i = currentPos;
         while (code.getCharacter(currentLine, i) != -1) {
             if (!isspace(code.getCharacter(currentLine, i))) {
-                if (!determineCategory(i, 1)) { //invalid character
-                    pljit_source::SourceReference source = pljit_source::SourceReference(currentLine, currentPos, 1, code);
+                if (!determineNextToken(i, 1)) { //invalid character
+                    pljit_source::SourceReference source = pljit_source::SourceReference(currentLine, currentPos, 1,
+                                                                                         code);
                     source.printContext("Unexpected character");
                     return nullptr;
                 }
                 beginningOfToken = i;
 
                 // greedy add
-                while (code.getCharacter(currentLine, i)) {
+                while (code.getCharacter(currentLine, i) != -1) {
                     if (isspace(code.getCharacter(currentLine, i)) ||
-                        !determineCategory(beginningOfToken, i + 1 - beginningOfToken)) {
+                        !determineNextToken(beginningOfToken, i + 1 - beginningOfToken)) {
                         currentPos = i;
-                        std::unique_ptr<Token> res = determineCategory(beginningOfToken, i - beginningOfToken);
+                        std::unique_ptr<Token> res = determineNextToken(beginningOfToken, i - beginningOfToken);
                         return res;
                     }
                     i++;
                 }
-                break;
             }
             i++;
         }
-        if(currentLine+1 == code.numberOfLines()) {
-            break; // TODO make this nicer
+        if (currentLine + 1 == code.numberOfLines()) {
+            break;
         }
         currentLine++;
         currentPos = 0;
     }
-    std::unique_ptr<Token> endToken = std::make_unique<Token>(pljit_source::SourceReference(currentLine, currentPos, 1, code),
-                          Token::Type::Invalid);
-    return endToken; // this is after there was nothing to read anymore, provide source location for error messages in parser
+    // End of the source-code is reached
+    std::unique_ptr<Token> endToken = std::make_unique<Token>(
+            pljit_source::SourceReference(currentLine, currentPos, 1, code),
+            Token::Type::Invalid);
+    return endToken;
 }
 //---------------------------------------------------------------------------
-std::unique_ptr<Token> Lexer::determineCategory(unsigned start, unsigned length)
+std::unique_ptr<Token> Lexer::determineNextToken(unsigned start, unsigned length)
 // Determines the category of the token
 {
-    char firstChar = code.getCharacter(currentLine, start);
+    char firstChar = code.getCharacter(currentLine, start); //read the character from the source-code
     pljit_source::SourceReference source = pljit_source::SourceReference(currentLine, start, length, code);
     if (firstChar == '+' && length == 1) {
         return std::make_unique<Token>(source, Token::Type::Plus);
@@ -72,6 +74,7 @@ std::unique_ptr<Token> Lexer::determineCategory(unsigned start, unsigned length)
     } else if (firstChar == ')' && length == 1) {
         return std::make_unique<Token>(source, Token::Type::Right_Bracket);
     } else if (isdigit(firstChar)) {
+        // Check if it contains only digits --> is a literal
         for (unsigned i = 0; i < length; i++) {
             if (!isdigit(code.getCharacter(currentLine, start + i))) {
                 return nullptr;
@@ -79,15 +82,15 @@ std::unique_ptr<Token> Lexer::determineCategory(unsigned start, unsigned length)
         }
         return std::make_unique<Token>(source, Token::Type::Literal);
     } else {
+        // if not only letters there is a problem
         for (unsigned i = 0; i < length; i++) {
             if (!isalpha(code.getCharacter(currentLine, start + i))) {
                 return nullptr;
             }
         }
 
-        std::string tokenAsString = std::string(code.getLine(currentLine)).substr(start,
-                                                                                  length); // TODO maybe use string_view instead
-
+        // Check if the token matches any keyword, else it is an identifier
+        std::string_view tokenAsString = code.getLine(currentLine).substr(start, length);
         if (tokenAsString == "PARAM") {
             return std::make_unique<Token>(source, Token::Type::Param);
         } else if (tokenAsString == "VAR") {

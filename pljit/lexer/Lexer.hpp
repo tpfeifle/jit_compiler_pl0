@@ -17,7 +17,7 @@ public:
     std::unique_ptr<Token> next();
 
     /// Determines the category of the token
-    std::unique_ptr<Token> determineCategory(unsigned start, unsigned length);
+    std::unique_ptr<Token> determineNextToken(unsigned start, unsigned length);
 
     /// Reference to the source code
     pljit_source::SourceCode code;

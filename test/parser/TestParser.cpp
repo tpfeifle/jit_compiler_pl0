@@ -8,24 +8,11 @@ namespace pljit_parser {
 //---------------------------------------------------------------------------
 using PTT = PTNode::Type;
 //---------------------------------------------------------------------------
-
-std::unique_ptr<NonTerminalPTNode> getParseTree(pljit_source::SourceCode code) {
+std::string getParsingErrors(pljit_source::SourceCode code) {
+    testing::internal::CaptureStderr();
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     Parser parser(lexer);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
-    return pt;
-}
-
-std::string getDotOutput(const std::unique_ptr<pljit_parser::NonTerminalPTNode>& pt) {
-    testing::internal::CaptureStdout();
-    pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
-    visitor.visit(*pt);
-    return testing::internal::GetCapturedStdout();
-}
-
-std::string getParsingErrors(pljit_source::SourceCode code) {
-    testing::internal::CaptureStderr();
-    auto pt = getParseTree(code);
     return testing::internal::GetCapturedStderr();
 }
 

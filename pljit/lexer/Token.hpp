@@ -32,11 +32,10 @@ public:
     };
 
     /// Constructor
-    Token(pljit_source::SourceReference source, const Type type) : source(std::move(source)), type(type) {}
+    Token(pljit_source::SourceReference source, const Type type) : source(source), type(type) {}
     /// Get the type of the Token
     [[nodiscard]] Token::Type getType() const;
 
-    // virtual ~Token() = default;
     /// A reference to the represented source code
     pljit_source::SourceReference source;
 private:
