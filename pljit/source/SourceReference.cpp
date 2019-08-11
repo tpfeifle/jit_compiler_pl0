@@ -5,31 +5,41 @@
 //---------------------------------------------------------------------------
 namespace pljit_source {
 //---------------------------------------------------------------------------
-// TODO: maybe use offset instead of lineNum, charPos
-SourceReference::SourceReference(unsigned lineNum, unsigned charPos, unsigned length, SourceCode& code) : code(code), lineNum(lineNum),
-                                                                                           charPos(charPos),
-                                                                                           length(length) {
-}
+SourceReference::SourceReference(unsigned lineNum, unsigned charPos,
+                                 unsigned length, SourceCode& code) : code(code), lineNum(lineNum),
+                                                                      charPos(charPos), length(length)
+// Constructor
+{}
 //---------------------------------------------------------------------------
-void SourceReference::printContext(std::string_view message) const {
+void SourceReference::printContext(std::string_view message) const
+// Output the context of the source reference in the source code
+{
     std::cerr << lineNum << ":" << charPos << ":" << message << std::endl;
     std::cerr << code.getLine(lineNum);
     std::cerr << std::string(charPos, ' ') << '^' << std::string(length - 1, '~') << std::endl;
 }
 //---------------------------------------------------------------------------
-std::string SourceReference::getText() const {
-    return code.getLine(lineNum).substr(charPos, length); //TODO make performant: string_view?
+std::string_view SourceReference::getText() const
+// Get the specified location from the source code
+{
+    return code.getLine(lineNum).substr(charPos, length);
 }
 //---------------------------------------------------------------------------
-unsigned SourceReference::getLineNum() const {
+unsigned SourceReference::getLineNum() const
+// Get the lineNum member variable
+{
     return lineNum;
 }
 //---------------------------------------------------------------------------
-unsigned SourceReference::getCharPos() const {
+unsigned SourceReference::getCharPos() const
+// Get the charPos member variable
+{
     return charPos;
 }
 //---------------------------------------------------------------------------
-unsigned SourceReference::getLength() const {
+unsigned SourceReference::getLength() const
+// Get the length member variable
+{
     return length;
 }
 //---------------------------------------------------------------------------

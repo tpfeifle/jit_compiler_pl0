@@ -1,4 +1,5 @@
 #pragma once
+//---------------------------------------------------------------------------
 #include <vector>
 #include <optional>
 #include "Token.hpp"
@@ -6,17 +7,22 @@
 //---------------------------------------------------------------------------
 namespace pljit_lexer {
 //---------------------------------------------------------------------------
+/// Transforms the source code into a stream of Tokens
 class Lexer {
 public:
+    /// Constructor
+    Lexer(pljit_source::SourceCode code) : code(std::move(code)), currentPos(0), currentLine(0) {}
 
-    Lexer(pljit_source::SourceCode& code) : code(code), currentPos(0), currentLine(0) {}
-
+    /// Provides the next Token from the source code
     std::unique_ptr<Token> next();
 
-    int determineCategory(Token& token, unsigned start, unsigned length); // assumes current line as line
+    /// Determines the category of the token
+    std::unique_ptr<Token> determineCategory(unsigned start, unsigned length);
 
-    pljit_source::SourceCode& code;
+    /// Reference to the source code
+    pljit_source::SourceCode code;
 private:
+    /// The current char- and line-position of the lexer in the code
     int currentPos;
     unsigned currentLine;
 };

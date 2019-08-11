@@ -186,7 +186,7 @@ TEST(Lexer, TestNoWhitespaces) {
         lexerTokens.emplace_back(*token);
     }
     for (Token token: lexerTokens) {
-        std::string text = token.source.getText();
+        std::string_view text = token.source.getText();
         assert(std::count_if(text.begin(), text.end(), isspace) == 0);
     }
 }

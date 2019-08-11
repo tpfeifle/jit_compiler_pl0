@@ -3,7 +3,9 @@
 //---------------------------------------------------------------------------
 namespace pljit_parser {
 //---------------------------------------------------------------------------
-std::string DotPTVisitor::nodeTypeToString(PTNode::Type type) {
+std::string DotPTVisitor::nodeTypeToString(PTNode::Type type)
+// Returns the parse-tree node-types as a string
+{
     std::string label;
     switch (type) {
         case PTNode::Type::Statement:
@@ -64,19 +66,30 @@ std::string DotPTVisitor::nodeTypeToString(PTNode::Type type) {
     return label;
 }
 //---------------------------------------------------------------------------
-void DotPTVisitor::visit(IdentifierPTNode& node) {
+void DotPTVisitor::visit(IdentifierPTNode& node)
+// Visitor method outputting the identifier node in the dot-format
+{
     std::cout << "Identifier" << node_count << "[label=\"" << node.getName() << "\"];" << std::endl;
     node_count++;
 }
-void DotPTVisitor::visit(LiteralPTNode& node) {
+//---------------------------------------------------------------------------
+void DotPTVisitor::visit(LiteralPTNode& node)
+// Visitor method outputting a literal node in the dot-format
+{
     std::cout << "Literal" << node_count << "[label=\"" << node.getValue() << "\"];" << std::endl;
     node_count++;
 }
-void DotPTVisitor::visit(GenericTokenPTNode& node) {
+//---------------------------------------------------------------------------
+void DotPTVisitor::visit(GenericTokenPTNode& node)
+// Visitor method outputting a generic token in the dot-format
+{
     std::cout << "GenericToken" << node_count << "[label=\"" << node.source.getText() << "\"];" << std::endl;
     node_count++;
 }
-void DotPTVisitor::visit(NonTerminalPTNode& node) {
+//---------------------------------------------------------------------------
+void DotPTVisitor::visit(NonTerminalPTNode& node)
+// Visitor method outputting a non-terminal in the dot-format and visiting all of its children
+{
     std::string label = nodeTypeToString(node.getType());
     unsigned thisNodeId = node_count;
     std::cout << label << thisNodeId << "[label=\"" << label << "\"];" << std::endl;

@@ -9,8 +9,7 @@ namespace pljit_parser {
 using PTT = PTNode::Type;
 //---------------------------------------------------------------------------
 
-std::unique_ptr<NonTerminalPTNode> getParseTree(const std::string& codeText) {
-    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+std::unique_ptr<NonTerminalPTNode> getParseTree(pljit_source::SourceCode code) {
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
     Parser parser(lexer);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
@@ -24,9 +23,9 @@ std::string getDotOutput(const std::unique_ptr<pljit_parser::NonTerminalPTNode>&
     return testing::internal::GetCapturedStdout();
 }
 
-std::string getParsingErrors(const std::string& codeText) {
+std::string getParsingErrors(pljit_source::SourceCode code) {
     testing::internal::CaptureStderr();
-    auto pt = getParseTree(codeText);
+    auto pt = getParseTree(code);
     return testing::internal::GetCapturedStderr();
 }
 
@@ -35,7 +34,8 @@ TEST(Parser, TestInvalidDeclaration) {
     std::string expectedError = "0:13:Expected identifier\n"
                                 "PARAM width, CONST, height, depth;\n"
                                 "             ^~~~~\n";
-    assert(getParsingErrors(codeText) == expectedError);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    assert(getParsingErrors(code) == expectedError);
 }
 
 TEST(Parser, TestMissingSemicolonInDeclaration) {
@@ -43,14 +43,16 @@ TEST(Parser, TestMissingSemicolonInDeclaration) {
     std::string expectedError = "0:11:Expected separator\n"
                                 "PARAM width\n"
                                 "           ^\n";
-    assert(getParsingErrors(codeText) == expectedError);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    assert(getParsingErrors(code) == expectedError);
 }
 
 TEST(Parser, TestMissingBracket) {
     std::string codeText = "BEGIN\n"
                            "RETURN 2 * (1 + 2 \n"
                            "END.";
-    std::cout << getParsingErrors(codeText) << std::endl;
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    std::cout << getParsingErrors(code) << std::endl;
     std::string expectedError = "0:11:Expected separator\n"
                                 "PARAM width\n"
                                 "           ^\n";
@@ -63,15 +65,22 @@ TEST(Parser, TestMissingBegin) {
     std::string expectedError = "0:0:Expected BEGIN keyword\n"
                                 "RETURN 2 * (1 + 2 \n"
                                 "^~~~~~\n";
-    assert(getParsingErrors(codeText) == expectedError);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    assert(getParsingErrors(code) == expectedError);
 }
 
 TEST(Parser, TestReturn) {
     std::string codeText = "BEGIN\n"
                            "RETURN 1\n"
                            "END.";
-    auto pt = getParseTree(codeText);
-    std::string output = getDotOutput(pt);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
+    Parser parser(lexer);
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    testing::internal::CaptureStdout();
+    pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
+    visitor.visit(*pt);
+    std::string output = testing::internal::GetCapturedStdout();
     std::string expectedDotGraph;
     expectedDotGraph = "FunctionDefinition0[label=\"FunctionDefinition\"];\n"
                        "FunctionDefinition0 -> CompoundStatement1\n"
@@ -109,8 +118,14 @@ TEST(Parser, TestAllSimple) {
                            "volume := width * height;\n"
                            "RETURN density * volume\n"
                            "END.";
-    auto pt = getParseTree(codeText);
-    std::string output = getDotOutput(pt);
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
+    Parser parser(lexer);
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    testing::internal::CaptureStdout();
+    pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
+    visitor.visit(*pt);
+    std::string output = testing::internal::GetCapturedStdout();
     std::string expectedDotGraph;
     expectedDotGraph = "FunctionDefinition0[label=\"FunctionDefinition\"];\n"
                        "FunctionDefinition0 -> ParamDeclaration1\n"
