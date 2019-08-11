@@ -6,27 +6,24 @@
 #include <pljit/parser/DotPTVisitor.hpp>
 #include <pljit/ast/DotASTVisitor.hpp>
 //---------------------------------------------------------------------------
-using namespace pljit_ast;
-using namespace std;
 using namespace pljit_lexer;
 using namespace pljit_parser;
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> getAstRoot(const string& codeText) {
+std::unique_ptr<FunctionAST> getAstRoot(const std::string& codeText) {
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    Parser parser(code);
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         exit(-1);
     }
     SemanticAnalyzer ast = SemanticAnalyzer();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
     return astRoot;
 }
 //---------------------------------------------------------------------------
-string getDotOutput(const unique_ptr<FunctionAST>& astRoot) {
+std::string getDotOutput(const std::unique_ptr<FunctionAST>& astRoot) {
     testing::internal::CaptureStdout();
     DotASTVisitor visitor = DotASTVisitor();
     visitor.visit(*astRoot);
@@ -34,12 +31,12 @@ string getDotOutput(const unique_ptr<FunctionAST>& astRoot) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestBrackets) {
-    string codeText = "BEGIN\n"
+    std::string codeText = "BEGIN\n"
                       "    RETURN 12 * (3 - 2)\n"
                       "END.\n";
     auto ast = getAstRoot(codeText);
-    string output = getDotOutput(ast);
-    string expectedOutput = "AST0[label=\"Function\"];\n"
+    std::string output = getDotOutput(ast);
+    std::string expectedOutput = "AST0[label=\"Function\"];\n"
                             "AST0 -> AST1\n"
                             "AST1[label=\"Return\"];\n"
                             "AST1 -> AST2\n"
@@ -56,20 +53,19 @@ TEST(Ast, TestBrackets) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestSymbolTable) {
-    string codeText = "PARAM width, height;\n"
+    std::string codeText = "PARAM width, height;\n"
                       "VAR temp, foo;\n"
                       "CONST hello = 12, test = 2000;\n"
                       "BEGIN\n"
                       "    RETURN 12 * (3 - 2)\n"
                       "END.\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    Parser parser(code);
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
 
     SemanticAnalyzer ast = SemanticAnalyzer();
-    unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
-    vector<pair<string, int>> expectedVariables = {{"width",  Symbol::Type::Param},
+    std::unique_ptr<FunctionAST> astRoot = ast.analyzeParseTree(std::move(pt));
+    std::vector<std::pair<std::string, int>> expectedVariables = {{"width",  Symbol::Type::Param},
                                                    {"height", Symbol::Type::Param},
                                                    {"temp",   Symbol::Type::Var},
                                                    {"foo",    Symbol::Type::Var},
@@ -82,43 +78,43 @@ TEST(Ast, TestSymbolTable) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestIdentifierDeclaredTwice) {
-    string codeText = "PARAM width, height;\n"
+    std::string codeText = "PARAM width, height;\n"
                       "VAR width;\n"
                       "BEGIN\n"
                       "    RETURN 1\n"
                       "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
-    string error = testing::internal::GetCapturedStderr();
-    string expectedError = "1:4:This identifier is already declared. Duplicate declarations are not allowed\n"
+    std::string error = testing::internal::GetCapturedStderr();
+    std::string expectedError = "1:4:This identifier is already declared. Duplicate declarations are not allowed\n"
                            "VAR width;\n"
                            "    ^~~~~\n";
     assert(error == expectedError);
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestUsingUndeclaredIdentifier) {
-    string codeText = "BEGIN\n"
+    std::string codeText = "BEGIN\n"
                       "    RETURN width\n"
                       "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
-    string error = testing::internal::GetCapturedStderr();
-    string expectedError = "1:11:Using an undeclared identifier\n"
+    std::string error = testing::internal::GetCapturedStderr();
+    std::string expectedError = "1:11:Using an undeclared identifier\n"
                            "    RETURN width\n"
                            "           ^~~~~\n";
     assert(error == expectedError);
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestAssigningValueToConstant) {
-    string codeText = "CONST foo = 10;\n"
+    std::string codeText = "CONST foo = 10;\n"
                       "BEGIN\n"
                       "    foo := 20;\n"
                       "    RETURN foo\n"
                       "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
-    string error = testing::internal::GetCapturedStderr();
-    string expectedError = "2:4:Assigning a value to a constant\n"
+    std::string error = testing::internal::GetCapturedStderr();
+    std::string expectedError = "2:4:Assigning a value to a constant\n"
                            "    foo := 20;\n"
                            "    ^~~\n";
     assert(error == expectedError);
@@ -126,14 +122,14 @@ TEST(Ast, TestAssigningValueToConstant) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestUsingUnitializedVariable) {
-    string codeText = "VAR foo;\n"
+    std::string codeText = "VAR foo;\n"
                       "BEGIN\n"
                       "    RETURN foo\n"
                       "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
-    string error = testing::internal::GetCapturedStderr();
-    string expectedError = "2:11:Using an uninitialized identifier\n"
+    std::string error = testing::internal::GetCapturedStderr();
+    std::string expectedError = "2:11:Using an uninitialized identifier\n"
                            "    RETURN foo\n"
                            "           ^~~\n";
     assert(error == expectedError);
@@ -141,14 +137,14 @@ TEST(Ast, TestUsingUnitializedVariable) {
 }
 //---------------------------------------------------------------------------
 TEST(Ast, TestMissingReturnStatement) {
-    string codeText = "PARAM foo;\n"
+    std::string codeText = "PARAM foo;\n"
                       "BEGIN\n"
                       "    foo := 20\n"
                       "END.\n";
     testing::internal::CaptureStderr();
     auto ast = getAstRoot(codeText);
-    string error = testing::internal::GetCapturedStderr();
-    string expectedError = "Function has no return statement\n";
+    std::string error = testing::internal::GetCapturedStderr();
+    std::string expectedError = "Function has no return statement\n";
     assert(error == expectedError);
 
 }

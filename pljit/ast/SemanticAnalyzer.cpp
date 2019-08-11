@@ -1,15 +1,14 @@
 #include "SemanticAnalyzer.hpp"
 #include <unordered_map>
 //---------------------------------------------------------------------------
-using namespace std;
 using namespace pljit_parser;
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
-unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(unique_ptr<NonTerminalPTNode> node)
+std::unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(std::unique_ptr<NonTerminalPTNode> node)
 // analyze the ParseTree: This is the starting-point for the analysis
 {
-    vector<unique_ptr<ASTNode>> children;
+    std::vector<std::unique_ptr<ASTNode>> children;
     unsigned childrenIndex = 0;
     if (node->children[0]->getType() == PTNode::Type::ParamDeclaration) {
         auto* paramDeclaration = static_cast<NonTerminalPTNode*>(node->children[0].get());
@@ -42,7 +41,7 @@ unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(unique_ptr<NonTermina
         auto* statement = static_cast<NonTerminalPTNode*>(statementList->children[i].get());
         // TODO: using .get or .release?
         // TODO: this casting is really ugly ...
-        unique_ptr<StatementAST> ASTstatement = unique_ptr<StatementAST>(
+        std::unique_ptr<StatementAST> ASTstatement = std::unique_ptr<StatementAST>(
                 static_cast<StatementAST*>(analyzeStatement(statement).release()));
         if (!ASTstatement) {
             return nullptr;
@@ -50,12 +49,12 @@ unique_ptr<FunctionAST> SemanticAnalyzer::analyzeParseTree(unique_ptr<NonTermina
         if (ASTstatement->getType() == ASTNode::Type::ReturnStatement) {
             hasReturn = true;
         }
-        children.emplace_back(move(ASTstatement));
+        children.emplace_back(std::move(ASTstatement));
     }
     if (!hasReturn) {
-        cerr << "Function has no return statement" << endl;
+        std::cerr << "Function has no return statement" << std::endl;
     }
-    std::unique_ptr<FunctionAST> res = make_unique<FunctionAST>(move(children));
+    std::unique_ptr<FunctionAST> res = std::make_unique<FunctionAST>(std::move(children));
     return res;
 }
 //---------------------------------------------------------------------------
@@ -65,11 +64,11 @@ void SemanticAnalyzer::analyzeDeclarations(NonTerminalPTNode* node, Symbol::Type
         if (child->getType() == PTNode::Type::Identifier) {
             // for declarator
             auto* identiferToken = static_cast<IdentifierPTNode*>(child.get());
-            string identifier = identiferToken->getName();
+            std::string identifier = identiferToken->getName();
             if (symbolTable.find(identifier) == symbolTable.end()) {
                 bool initialize = type == Symbol::Type::Param;
                 Symbol symbol = Symbol(type, child->source, initialize, 0);
-                symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
+                symbolTable.emplace(std::pair<std::string, std::pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
             } else {
                 identiferToken->source.printContext(
                         "This identifier is already declared. Duplicate declarations are not allowed");
@@ -86,10 +85,10 @@ void SemanticAnalyzer::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol:
 
         auto* identiferToken = static_cast<IdentifierPTNode*>(initDeclarator->children[0].get());
         auto* literal = static_cast<LiteralPTNode*>(initDeclarator->children[2].get());
-        string identifier = identiferToken->getName();
+        std::string identifier = identiferToken->getName();
         Symbol symbol = Symbol(type, initDeclarator->children[i]->source, true, literal->getValue());
         if (symbolTable.find(identifier) == symbolTable.end()) {
-            symbolTable.emplace(pair<string, pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
+            symbolTable.emplace(std::pair<std::string, std::pair<Symbol, unsigned>>(identifier, {symbol, symbolTable.size()}));
         } else {
             identiferToken->source.printContext(
                     "This identifier is already declared. Duplicate declarations are not allowed");
@@ -98,12 +97,12 @@ void SemanticAnalyzer::analyzeConstDeclarations(NonTerminalPTNode* node, Symbol:
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<StatementAST> SemanticAnalyzer::analyzeStatement(NonTerminalPTNode* node) {
+std::unique_ptr<StatementAST> SemanticAnalyzer::analyzeStatement(NonTerminalPTNode* node) {
     auto* statement = static_cast<NonTerminalPTNode*>(node);
     if (statement->children.size() == 1) {
         auto* assignmentExpr = static_cast<NonTerminalPTNode*>(statement->children[0].get());
         auto* identiferToken = static_cast<IdentifierPTNode*>(assignmentExpr->children[0].get());
-        string identifier = identiferToken->getName();
+        std::string identifier = identiferToken->getName();
         if (symbolTable.find(identifier) == symbolTable.end()) {
             identiferToken->source.printContext("Using an undeclared identifier");
             return nullptr;
@@ -114,17 +113,17 @@ unique_ptr<StatementAST> SemanticAnalyzer::analyzeStatement(NonTerminalPTNode* n
         }
         symbolTable.at(identifier).first.initialized = true;
         auto* additiveExpr = static_cast<NonTerminalPTNode*>(assignmentExpr->children[2].get());
-        return make_unique<AssignmentAST>(make_unique<IdentifierAST>(identifier),
+        return std::make_unique<AssignmentAST>(std::make_unique<IdentifierAST>(identifier),
                                           analyzeAdditiveExpression(additiveExpr));
         // this has to be stored in context with identifier
     } else { // additive expression
         auto* additiveExprStatement = static_cast<NonTerminalPTNode*>(statement->children[1].get());
         // this is return
-        return make_unique<ReturnStatementAST>(analyzeAdditiveExpression(additiveExprStatement));
+        return std::make_unique<ReturnStatementAST>(analyzeAdditiveExpression(additiveExprStatement));
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeAdditiveExpression(NonTerminalPTNode* node) {
+std::unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeAdditiveExpression(NonTerminalPTNode* node) {
     if (node->children.size() == 1) {
         return analyzeMultiplicativeExpression(static_cast<NonTerminalPTNode*>(node->children[0].get()));
     } else {
@@ -134,15 +133,15 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeAdditiveExpression(NonTermina
         auto right = analyzeAdditiveExpression(static_cast<NonTerminalPTNode*>(node->children[2].get()));
 
         if (additiveOperator->getOperatorType() == OperatorAlternationPTNode::Plus) {
-            return make_unique<BinaryOperationAST>(move(left), BinaryOperationAST::Plus, move(right));
+            return std::make_unique<BinaryOperationAST>(std::move(left), BinaryOperationAST::Plus, std::move(right));
         } else {
-            return make_unique<BinaryOperationAST>(move(left), BinaryOperationAST::Minus, move(right));
+            return std::make_unique<BinaryOperationAST>(std::move(left), BinaryOperationAST::Minus, std::move(right));
         }
 
     }
 }
 //---------------------------------------------------------------------------
-unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonTerminalPTNode* node) {
+std::unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonTerminalPTNode* node) {
     auto* unaryExpr = static_cast<NonTerminalPTNode*>(node->children[0].get());
     unsigned unaryChildIndex = 0;
     if (unaryExpr->children.size() == 2) {
@@ -150,10 +149,10 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonT
     }
 
     auto* primaryExpr = static_cast<NonTerminalPTNode*>(unaryExpr->children[unaryChildIndex].get());
-    unique_ptr<ExpressionAST> left;
+    std::unique_ptr<ExpressionAST> left;
     if (primaryExpr->children[0]->getType() == PTNode::Type::Identifier) {
         auto* identiferToken = static_cast<IdentifierPTNode*>(primaryExpr->children[0].get());
-        string identifier = identiferToken->getName();
+        std::string identifier = identiferToken->getName();
         if (symbolTable.find(identifier) == symbolTable.end()) {
             identiferToken->source.printContext("Using an undeclared identifier");
             return nullptr;
@@ -162,10 +161,10 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonT
             identiferToken->source.printContext("Using an uninitialized identifier");
             return nullptr;
         }
-        left = make_unique<IdentifierAST>(identifier);
+        left = std::make_unique<IdentifierAST>(identifier);
     } else if (primaryExpr->children[0]->getType() == PTNode::Type::Literal) {
         auto* literal = static_cast<LiteralPTNode*>(primaryExpr->children[0].get());
-        left = make_unique<LiteralAST>(literal->getValue());
+        left = std::make_unique<LiteralAST>(literal->getValue());
     } else {
         if (primaryExpr->children.size() == 3) { // has brackets
             left = analyzeAdditiveExpression(static_cast<NonTerminalPTNode*>(primaryExpr->children[1].get()));
@@ -178,9 +177,9 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonT
     if (unaryChildIndex == 1) { //this means we had a plus or minus optional in the unary expression
         auto* signOperator = static_cast<OperatorAlternationPTNode*>(unaryExpr->children[0].get());
         if (signOperator->getOperatorType() == OperatorAlternationPTNode::Plus) {
-            left = make_unique<UnaryAST>(move(left), UnaryAST::SignType::Plus);
+            left = std::make_unique<UnaryAST>(std::move(left), UnaryAST::SignType::Plus);
         } else {
-            left = make_unique<UnaryAST>(move(left), UnaryAST::SignType::Minus);
+            left = std::make_unique<UnaryAST>(std::move(left), UnaryAST::SignType::Minus);
         }
 
     }
@@ -195,7 +194,7 @@ unique_ptr<ExpressionAST> SemanticAnalyzer::analyzeMultiplicativeExpression(NonT
         }
 
         auto right = analyzeMultiplicativeExpression(static_cast<NonTerminalPTNode*>(node->children[2].get()));
-        return make_unique<BinaryOperationAST>(move(left), operatorType, move(right));
+        return std::make_unique<BinaryOperationAST>(std::move(left), operatorType, std::move(right));
     }
 
     return left; // only unary-expression

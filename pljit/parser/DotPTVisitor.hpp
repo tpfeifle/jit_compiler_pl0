@@ -1,6 +1,7 @@
 #pragma once
 //---------------------------------------------------------------------------
 #include "PTNode.hpp"
+#include "PTVisitor.hpp"
 //---------------------------------------------------------------------------
 namespace pljit_parser {
 /// Implements Visitor to output the Parse-Tree in the dot-syntax

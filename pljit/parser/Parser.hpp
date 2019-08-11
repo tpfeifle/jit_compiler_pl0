@@ -39,7 +39,7 @@ class Parser {
     bool errorDuringDeclaration = false;
 public:
     /// Constructor
-    explicit Parser(pljit_lexer::Lexer lexer) : lexer(std::move(lexer)) {}
+    explicit Parser(pljit_source::SourceCode code) : lexer(std::move(code)) {}
     /// Public interface to create the parse-tree
     std::unique_ptr<NonTerminalPTNode> parseFunctionDefinition();
 };

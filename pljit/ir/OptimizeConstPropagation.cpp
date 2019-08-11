@@ -3,7 +3,6 @@
 //---------------------------------------------------------------------------
 namespace pljit_ir {
 //---------------------------------------------------------------------------
-using namespace std;
 //---------------------------------------------------------------------------
 OptimizeConstPropagation::OptimizeConstPropagation(std::unordered_map<std::string, int> constValues) {
     this->constValues = std::move(constValues);
@@ -21,7 +20,7 @@ void OptimizeConstPropagation::visit(pljit_ast::AssignmentAST& node) {
     node.expression->accept(*this);
     if (expressionMapping.find(expressionNode) != expressionMapping.end()) {
         constValues.insert({node.identifier->identifier, expressionMapping.at(expressionNode)});
-        node.expression = make_unique<pljit_ast::LiteralAST>(expressionMapping.at(expressionNode));
+        node.expression = std::make_unique<pljit_ast::LiteralAST>(expressionMapping.at(expressionNode));
     }
 }
 void OptimizeConstPropagation::visit(pljit_ast::ReturnStatementAST& node) {
@@ -30,7 +29,7 @@ void OptimizeConstPropagation::visit(pljit_ast::ReturnStatementAST& node) {
     node.expression->accept(*this);
     if (expressionMapping.find(expressionNode) != expressionMapping.end()) {
         constValues.insert({"RETURN", expressionMapping.at(expressionNode)});
-        node.expression = make_unique<pljit_ast::LiteralAST>(expressionMapping.at(expressionNode));
+        node.expression = std::make_unique<pljit_ast::LiteralAST>(expressionMapping.at(expressionNode));
     }
 }
 void OptimizeConstPropagation::visit(pljit_ast::BinaryOperationAST& node) {
@@ -42,10 +41,10 @@ void OptimizeConstPropagation::visit(pljit_ast::BinaryOperationAST& node) {
     unsigned nodeRight = node_count;
     node.right->accept(*this);
     if (expressionMapping.find(nodeRight) != expressionMapping.end()) {
-        node.right = make_unique<pljit_ast::LiteralAST>(expressionMapping.at(nodeRight));
+        node.right = std::make_unique<pljit_ast::LiteralAST>(expressionMapping.at(nodeRight));
     }
     if (expressionMapping.find(nodeLeft) != expressionMapping.end()) {
-        node.left = make_unique<pljit_ast::LiteralAST>(expressionMapping.at(nodeLeft));
+        node.left = std::make_unique<pljit_ast::LiteralAST>(expressionMapping.at(nodeLeft));
     }
     if (expressionMapping.find(nodeRight) != expressionMapping.end() &&
         expressionMapping.find(nodeLeft) != expressionMapping.end()) {
@@ -81,9 +80,9 @@ void OptimizeConstPropagation::visit(pljit_ast::UnaryAST& node) {
     if (expressionMapping.find(expressionNode) != expressionMapping.end()) {
         if (node.sign == pljit_ast::UnaryAST::Minus) {
             expressionMapping.insert({currentNode, -1 * expressionMapping[node_count]});
-            node.child = make_unique<pljit_ast::LiteralAST>(-1 * expressionMapping[node_count]);
+            node.child = std::make_unique<pljit_ast::LiteralAST>(-1 * expressionMapping[node_count]);
         } else {
-            node.child = make_unique<pljit_ast::LiteralAST>(expressionMapping[node_count]);
+            node.child = std::make_unique<pljit_ast::LiteralAST>(expressionMapping[node_count]);
         }
     }
 }

@@ -5,8 +5,7 @@
 namespace pljit_function {
 //---------------------------------------------------------------------------
 void PljitFunction::compile() {
-    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
-    pljit_parser::Parser parser = pljit_parser::Parser(lexer);
+    pljit_parser::Parser parser = pljit_parser::Parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         std::cout << "Parser failed" << std::endl;

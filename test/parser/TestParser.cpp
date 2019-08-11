@@ -8,44 +8,68 @@ namespace pljit_parser {
 //---------------------------------------------------------------------------
 using PTT = PTNode::Type;
 //---------------------------------------------------------------------------
-std::string getParsingErrors(pljit_source::SourceCode code) {
+std::string getParsingErrors(const pljit_source::SourceCode& code)
+// Capture the error output of the parser and return it
+{
     testing::internal::CaptureStderr();
-    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
-    Parser parser(lexer);
+    Parser parser(code);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     return testing::internal::GetCapturedStderr();
 }
-
+//---------------------------------------------------------------------------
 TEST(Parser, TestInvalidDeclaration) {
     std::string codeText = "PARAM width, CONST, height, depth;";
     std::string expectedError = "0:13:Expected identifier\n"
                                 "PARAM width, CONST, height, depth;\n"
                                 "             ^~~~~\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    assert(getParsingErrors(code) == expectedError);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
 }
-
+//---------------------------------------------------------------------------
+TEST(Parser, TestMissingFinalPoint) {
+    std::string codeText = "BEGIN\n"
+                           "RETURN 1\n"
+                           "END";
+    std::string expectedError = "2:3:Expected final token\n"
+                                "END\n"
+                                "   ^\n";
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
+}
+//---------------------------------------------------------------------------
 TEST(Parser, TestMissingSemicolonInDeclaration) {
     std::string codeText = "PARAM width";
     std::string expectedError = "0:11:Expected separator\n"
                                 "PARAM width\n"
                                 "           ^\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    assert(getParsingErrors(code) == expectedError);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
 }
 
 TEST(Parser, TestMissingBracket) {
     std::string codeText = "BEGIN\n"
-                           "RETURN 2 * (1 + 2 \n"
+                           "RETURN 1 * (2 + 3;\n"
                            "END.";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    std::cout << getParsingErrors(code) << std::endl;
-    std::string expectedError = "0:11:Expected separator\n"
-                                "PARAM width\n"
+    std::string expectedError = "1:17:Expected ')'\n"
+                                "RETURN 1 * (2 + 3;\n"
+                                "                 ^\n"
+                                "1:11:to match this '('\n"
+                                "RETURN 1 * (2 + 3;\n"
                                 "           ^\n";
-    //assert(getParsingErrors(codeText) == expectedError);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
 }
-
+TEST(Parser, TestWrongPrimaryExpression) {
+    std::string codeText = "BEGIN\n"
+                           "RETURN 1 * VAR\n"
+                           "END.";
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    std::string expectedError = "1:11:Expected an identifer, literal or '('\n"
+                                "RETURN 1 * VAR\n"
+                                "           ^~~\n";
+    EXPECT_EQ(getParsingErrors(code), expectedError);
+}
+//---------------------------------------------------------------------------
 TEST(Parser, TestMissingBegin) {
     std::string codeText = "RETURN 2 * (1 + 2 \n"
                            "END.";
@@ -53,16 +77,59 @@ TEST(Parser, TestMissingBegin) {
                                 "RETURN 2 * (1 + 2 \n"
                                 "^~~~~~\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    assert(getParsingErrors(code) == expectedError);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
 }
+//---------------------------------------------------------------------------
+TEST(Parser, TestMissingAssignment) {
+    std::string codeText = "BEGIN\n"
+                           "foo 12 * 3;\n"
+                           "RETURN 1\n"
+                           "END";
+    std::string expectedError = "1:4:Expected assignment\n"
+                                "foo 12 * 3;\n"
+                                "    ^~\n";
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    EXPECT_EQ(getParsingErrors(code), expectedError);
+}
+//---------------------------------------------------------------------------
+TEST(ParserDefaultNodesTest, TestDetailed) {
+    std::string codeText = "BEGIN\n"
+                           "RETURN 12\n"
+                           "END.";
+    pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
+    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
+    Parser parser(code);
+    std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
+    assert((*pt).getType() == PTNode::Type::FunctionDefinition);
+    EXPECT_EQ(pt->children[0]->getType(), PTNode::Type::CompoundStatement);
+    EXPECT_EQ(pt->children[1]->getType(), PTNode::Type::GenericToken);
 
-TEST(Parser, TestReturn) {
+    // compound statement
+    auto* compoundStatement = static_cast<NonTerminalPTNode*>(pt->children[0].release());
+    EXPECT_EQ(compoundStatement->children[0]->getType(), PTNode::Type::GenericToken); // begin
+    EXPECT_EQ(compoundStatement->children[1]->getType(), PTNode::Type::StatementList); // statement list
+    EXPECT_EQ(compoundStatement->children[2]->getType(), PTNode::Type::GenericToken); // end
+    auto* statementList = static_cast<NonTerminalPTNode*>(compoundStatement->children[1].release());
+    EXPECT_EQ(statementList->children[0]->getType(), PTNode::Type::Statement); // statement
+    auto* returnStatement = static_cast<NonTerminalPTNode*>(statementList->children[0].release());
+    EXPECT_EQ(returnStatement->children[0]->getType(), PTNode::Type::GenericToken); // return keyword
+    EXPECT_EQ(returnStatement->children[1]->getType(), PTNode::Type::AdditiveExpr);
+    auto* additiveExpr = static_cast<NonTerminalPTNode*>(returnStatement->children[1].release());
+    EXPECT_EQ(additiveExpr->children[0]->getType(), PTNode::Type::MultiplicativeExpr);
+    auto* multiplicativeExpr = static_cast<NonTerminalPTNode*>(additiveExpr->children[0].release());
+    EXPECT_EQ(multiplicativeExpr->children[0]->getType(), PTNode::Type::UnaryExpr);
+    auto* unaryExpr = static_cast<NonTerminalPTNode*>(multiplicativeExpr->children[0].release());
+    EXPECT_EQ(unaryExpr->children[0]->getType(), PTNode::Type::PrimaryExpr);
+    auto* primaryExpr = static_cast<NonTerminalPTNode*>(unaryExpr->children[0].release());
+    EXPECT_EQ(primaryExpr->children[0]->getType(), PTNode::Type::Literal);
+}
+//---------------------------------------------------------------------------
+TEST(Parser, TestReturnDotFormat) {
     std::string codeText = "BEGIN\n"
                            "RETURN 1\n"
                            "END.";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
-    Parser parser(lexer);
+    Parser parser(code);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     testing::internal::CaptureStdout();
     pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
@@ -94,10 +161,10 @@ TEST(Parser, TestReturn) {
                        "GenericToken14[label=\"END\"];\n"
                        "FunctionDefinition0 -> GenericToken16\n"
                        "GenericToken16[label=\".\"];\n";
-    assert(output == expectedDotGraph);
+    EXPECT_EQ(output, expectedDotGraph);
 }
-
-TEST(Parser, TestAllSimple) {
+//---------------------------------------------------------------------------
+TEST(Parser, TestAllDotFormat) {
     std::string codeText = "PARAM width, height, depth;\n"
                            "VAR volume;\n"
                            "CONST density = 2400;\n"
@@ -107,7 +174,7 @@ TEST(Parser, TestAllSimple) {
                            "END.";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
     pljit_lexer::Lexer lexer = pljit_lexer::Lexer(code);
-    Parser parser(lexer);
+    Parser parser(code);
     std::unique_ptr<NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     testing::internal::CaptureStdout();
     pljit_parser::DotPTVisitor visitor = pljit_parser::DotPTVisitor();
@@ -223,142 +290,8 @@ TEST(Parser, TestAllSimple) {
                        "GenericToken79[label=\"END\"];\n"
                        "FunctionDefinition0 -> GenericToken81\n"
                        "GenericToken81[label=\".\"];\n";
-    assert(output == expectedDotGraph);
+    EXPECT_EQ(output, expectedDotGraph);
 }
-
-/*TEST(Parser, TestAllSimple) {
-    vector<string> codeText = {"PARAM width;\n",
-                                         "VAR volume;\n",
-                                         "CONST density = 2400;\n",
-                                         "BEGIN\n",
-                                         "    RETURN width*volume*density\n",
-                                         "END.\n"};
-
-    vector<pair<pair<unsigned, PTT>, vector<pair<unsigned, PTT>>> expectedTree{ // Format: parent, type
-            {{0, PTT::FunctionDefinition}, {{1, PTT::VarDeclaration}, {2, PTT::ConstDeclaration}, {3, PTT::CompoundStatement}, {4, PTT::GenericToken}}},
-            {1, {6, 7, 8}},
-            {7, {9}},
-            {2, {10, 11, 12}},
-    };
-    vector<PTT> expectedTypes = {
-            PTT::FunctionDefinition, PTT::VarDeclaration, PTT::ParamDeclaration, PTT::ConstDeclaration, PTT::CompoundStatement, PTT::GenericToken,
-            PTT::GenericToken, PTT::Identifier, PTT::GenericToken, // param
-            PTT::GenericToken, PTT::DeclaratorList, PTT::GenericToken, // var
-            PTT::Identifier,
-
-
-    };
-    SourceCode code = SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    shared_ptr<PTNode> pt = parser.parseFunctionDefinition();
-    validateNode(pt, 0, expectedTree, expectedTypes);
-}*/
-
-
-/*TEST(ParserDeathTest, TestExpectError) {
-    vector<string> codeText = {"PARAM width, CONST, height, depth;\n",
-                                         "VAR volume;\n",
-                                         "CONST density = 2400;\n",
-                                         "BEGIN\n",
-                                         "    volume := width * height * depth;\n",
-                                         "    RETURN density * volume\n",
-                                         "END.\n"};
-    SourceCode code = SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    EXPECT_DEATH(parser.parseFunctionDefinition(), "0:13:Expected identifier\n"
-                                                   "PARAM width, CONST, height, depth;\n *"); // TODO
-    //"             ^~~~~");
-}
-
-TEST(Parser1, Test1) {
-    vector<string> codeText = {"PARAM width, height, depth;\n",
-                                         "VAR volume;\n",
-                                         "CONST density = 2400;\n",
-                                         "CONST density = 2400;\n"};
-    SourceCode code = SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    //testing::internal::CaptureStdout();
-    Parser parser(lexer);
-    shared_ptr<PTNode> pt = parser.parseFunctionDefinition();
-    if (!pt) {
-        cout << "Parser failed" << endl;
-    }
-    //string output = testing::internal::GetCapturedStdout();
-    string expectedOutput = "No END";
-    //assert(output == expectedOutput);
-}*/
-
-
-
-
-/*
-TEST(ParserDefaultNodesTest, TestNodes) {
-    vector<string> codeText = {"PARAM width, height, depth;\n",
-                                         "VAR volume;\n",
-                                         "CONST density = 2400;\n",
-                                         "BEGIN\n",
-                                         "    volume := width * height * depth;\n",
-                                         "    RETURN density * volume\n",
-                                         "END.\n"};
-    SourceCode code = SourceCode(codeText);
-    Lexer lexer = Lexer(code);
-    Parser parser(lexer);
-    shared_ptr<PTNode> pt = parser.parseFunctionDefinition();
-    assert((*pt).type == PTNode::Type::FunctionDefinition);
-    assert((*pt).children[0].type == PTNode::Type::ParamDeclaration);
-    assert((*pt).children[1].type == PTNode::Type::VarDeclaration);
-    assert((*pt).children[2].type == PTNode::Type::ConstDeclaration);
-    assert((*pt).children[3].type == PTNode::Type::CompoundStatement);
-    assert((*pt).children[4].type == PTNode::Type::GenericToken);
-
-    // first line
-    assert((*pt).children[0].children[0].type == PTNode::Type::GenericToken);
-    assert((*pt).children[0].children[1].type == PTNode::Type::DeclaratorList);
-    assert((*pt).children[0].children[1].children[0].type == PTNode::Type::Identifier);
-    assert((*pt).children[0].children[1].children[1].type == PTNode::Type::GenericToken);
-    assert((*pt).children[0].children[1].children[2].type == PTNode::Type::Identifier);
-    assert((*pt).children[0].children[1].children[3].type == PTNode::Type::GenericToken);
-    assert((*pt).children[0].children[1].children[4].type == PTNode::Type::Identifier);
-    assert((*pt).children[0].children[2].type == PTNode::Type::GenericToken);
-
-    // second line
-    assert((*pt).children[1].children[0].type == PTNode::Type::GenericToken);
-    assert((*pt).children[1].children[1].type == PTNode::Type::DeclaratorList);
-    assert((*pt).children[1].children[1].children[0].type == PTNode::Type::Identifier);
-    assert((*pt).children[1].children[2].type == PTNode::Type::GenericToken);
-
-    // third line
-    assert((*pt).children[2].children[0].type == PTNode::Type::GenericToken);
-    assert((*pt).children[2].children[1].type == PTNode::Type::InitDeclaratorList);
-    assert((*pt).children[2].children[1].children[0].type == PTNode::Type::InitDeclarator);
-    // TODO here should more than just an InitDeclarator
-    assert((*pt).children[2].children[2].type == PTNode::Type::GenericToken);
-
-    // compound statement
-    assert((*pt).children[3].children[0].type == PTNode::Type::GenericToken); // begin
-    assert((*pt).children[3].children[1].children[0].type == PTNode::Type::Statement); // statement 1
-        PTNode statement1 = (*pt).children[3].children[1].children[0];
-        assert(statement1.children[0].children[0].type == PTNode::Type::Identifier);
-        assert(statement1.children[0].children[1].type == PTNode::Type::GenericToken);
-        assert(statement1.children[0].children[2].type == PTNode::Type::AdditiveExpr);
-        assert(statement1.children[0].children[2].children[0].type == PTNode::Type::MultiplicativeExpr);
-        PTNode mulNode = statement1.children[0].children[2].children[0];
-        assert(mulNode.children[0].type == PTNode::Type::UnaryExpr);
-        assert(mulNode.children[1].type == PTNode::Type::GenericToken);
-        assert(mulNode.children[2].type == PTNode::Type::MultiplicativeExpr);
-        // TODO finish this, but seems to be working correctly
-
-
-    assert((*pt).children[3].children[1].children[1].type == PTNode::Type::GenericToken);
-    assert((*pt).children[3].children[1].children[2].type == PTNode::Type::Statement); // statement 2
-    assert((*pt).children[3].children[2].type == PTNode::Type::GenericToken); // end
-
-    // final point
-    assert((*pt).children[4].type == PTNode::Type::GenericToken);
-}
- */
 //---------------------------------------------------------------------------
 } // namespace pljit_parser
 //---------------------------------------------------------------------------

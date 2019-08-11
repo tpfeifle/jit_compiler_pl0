@@ -11,8 +11,7 @@ namespace pljit_ast {
 //---------------------------------------------------------------------------
 std::unique_ptr<FunctionAST> getAstRoot2(const std::string& codeText) { // TODO fix linker error correctly
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    pljit_lexer::Lexer lexer(code);
-    pljit_parser::Parser parser(lexer);
+    pljit_parser::Parser parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         exit(-1);

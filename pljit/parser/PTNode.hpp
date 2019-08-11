@@ -6,24 +6,8 @@
 #include "iostream"
 //---------------------------------------------------------------------------
 namespace pljit_parser {
-//---------------------------------------------------------------------------
-struct LiteralPTNode;
-struct IdentifierPTNode;
-struct GenericTokenPTNode;
-struct OperatorAlternationPTNode;
-struct NonTerminalPTNode;
 
-//---------------------------------------------------------------------------
-/// Visitor for the parse-tree, used to output e.g. the tree in the dot-format
-class PTVisitor {
-public:
-    /// Visitor methods for the visitor pattern
-    virtual void visit(LiteralPTNode& node) = 0;
-    virtual void visit(IdentifierPTNode& node) = 0;
-    virtual void visit(GenericTokenPTNode& node) = 0;
-    virtual void visit(NonTerminalPTNode& node) = 0;
-};
-
+class PTVisitor;
 //---------------------------------------------------------------------------
 /// Parse-Tree Node
 class PTNode {

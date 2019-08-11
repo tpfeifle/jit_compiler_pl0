@@ -24,8 +24,7 @@ TEST(Ir, TestConstPropagation) {
                            "    RETURN loft + ( 1 + 2)\n"
                            "END.\n";
     pljit_source::SourceCode code = pljit_source::SourceCode(codeText);
-    pljit_lexer::Lexer lexer(code);
-    pljit_parser::Parser parser(lexer);
+    pljit_parser::Parser parser(code);
     std::unique_ptr<pljit_parser::NonTerminalPTNode> pt = parser.parseFunctionDefinition();
     if (!pt) {
         exit(-1);
