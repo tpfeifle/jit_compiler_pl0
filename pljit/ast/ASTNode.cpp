@@ -1,4 +1,5 @@
 #include "ASTNode.hpp"
+#include "ASTVisitor.hpp"
 //---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
@@ -10,18 +11,24 @@ int64_t LiteralAST::getValue() const {
     return value;
 }
 //---------------------------------------------------------------------------
-int64_t FunctionAST::execute(pljit_ir::Evaluate& evaluate) {
+int64_t FunctionAST::execute(pljit_ir::Evaluate& evaluate)
+// Get the return value of the function in the provided context
+{
     for (auto&& child: children) {
         child->execute(evaluate);
     }
     return evaluate.variables.at("Return");
 }
 //---------------------------------------------------------------------------
-int64_t LiteralAST::execute(pljit_ir::Evaluate&) {
+int64_t LiteralAST::execute(pljit_ir::Evaluate&)
+// Get the value of the literal
+{
     return value;
 }
 //---------------------------------------------------------------------------
-int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate) {
+int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate)
+// Get the return value of the unary node in the provided context
+{
     if (sign == SignType::Plus) {
         return child->execute(evaluate);
     } else {
@@ -29,22 +36,30 @@ int64_t UnaryAST::execute(pljit_ir::Evaluate& evaluate) {
     }
 }
 //---------------------------------------------------------------------------
-int64_t IdentifierAST::execute(pljit_ir::Evaluate& evaluate) {
-    return evaluate.variables.at(identifier); // TODO
+int64_t IdentifierAST::execute(pljit_ir::Evaluate& evaluate)
+// Get the value of the identifier in the provided context
+{
+    return evaluate.variables.at(identifier);
 }
 //---------------------------------------------------------------------------
 
-int64_t AssignmentAST::execute(pljit_ir::Evaluate& evaluate) {
+int64_t AssignmentAST::execute(pljit_ir::Evaluate& evaluate)
+// Update the evaluation context with the assignment
+{
     evaluate.variables[identifier->identifier] = expression->execute(evaluate);
-    return 0; // TODO not needed
+    return 0;
 }
 //---------------------------------------------------------------------------
-int64_t ReturnStatementAST::execute(pljit_ir::Evaluate& evaluate) {
+int64_t ReturnStatementAST::execute(pljit_ir::Evaluate& evaluate)
+// Update the evaluation context with the return value
+{
     evaluate.variables.insert({"Return", expression->execute(evaluate)});
-    return 0; // TODO: actually not really needed
+    return 0;
 }
 //---------------------------------------------------------------------------
-int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate) {
+int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate)
+// Return the result of the binary operation in the provided context
+{
     switch (type) {
         case OperationType::Plus:
             return left->execute(evaluate) + right->execute(evaluate);
@@ -55,13 +70,12 @@ int64_t BinaryOperationAST::execute(pljit_ir::Evaluate& evaluate) {
         case OperationType::Divide:
             int64_t temp = right->execute(evaluate);
             if (temp == 0) {
-                std::cout << "Division by zero error" << std::endl;
+                std::cout << "Division by zero error" << std::endl; // TODO
                 evaluate.errorCode = 1;
                 return -1; // TODO
             }
             return left->execute(evaluate) / temp;
     }
-    return 0; // never happens
 }
 //---------------------------------------------------------------------------
 void FunctionAST::accept(ASTVisitor& v) {

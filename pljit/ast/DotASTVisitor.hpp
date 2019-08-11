@@ -1,7 +1,8 @@
 #pragma once
 //---------------------------------------------------------------------------
 #include "ASTNode.hpp"
-
+#include "ASTVisitor.hpp"
+//---------------------------------------------------------------------------
 namespace pljit_ast {
 //---------------------------------------------------------------------------
 /// A visitor for the abstract syntax tree outputting the tree in dot formmat

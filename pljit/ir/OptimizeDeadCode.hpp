@@ -1,6 +1,7 @@
 #pragma once
 //---------------------------------------------------------------------------
 #include <pljit/ast/ASTNode.hpp>
+#include <pljit/ast/ASTVisitor.hpp>
 
 namespace pljit_ir {
 //---------------------------------------------------------------------------
