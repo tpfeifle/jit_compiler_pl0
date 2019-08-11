@@ -105,22 +105,22 @@ TEST(ParserDefaultNodesTest, TestDetailed) {
     EXPECT_EQ(pt->children[1]->getType(), PTNode::Type::GenericToken);
 
     // compound statement
-    auto* compoundStatement = static_cast<NonTerminalPTNode*>(pt->children[0].release());
+    auto* compoundStatement = static_cast<NonTerminalPTNode*>(pt->children[0].get());
     EXPECT_EQ(compoundStatement->children[0]->getType(), PTNode::Type::GenericToken); // begin
     EXPECT_EQ(compoundStatement->children[1]->getType(), PTNode::Type::StatementList); // statement list
     EXPECT_EQ(compoundStatement->children[2]->getType(), PTNode::Type::GenericToken); // end
-    auto* statementList = static_cast<NonTerminalPTNode*>(compoundStatement->children[1].release());
+    auto* statementList = static_cast<NonTerminalPTNode*>(compoundStatement->children[1].get());
     EXPECT_EQ(statementList->children[0]->getType(), PTNode::Type::Statement); // statement
-    auto* returnStatement = static_cast<NonTerminalPTNode*>(statementList->children[0].release());
+    auto* returnStatement = static_cast<NonTerminalPTNode*>(statementList->children[0].get());
     EXPECT_EQ(returnStatement->children[0]->getType(), PTNode::Type::GenericToken); // return keyword
     EXPECT_EQ(returnStatement->children[1]->getType(), PTNode::Type::AdditiveExpr);
-    auto* additiveExpr = static_cast<NonTerminalPTNode*>(returnStatement->children[1].release());
+    auto* additiveExpr = static_cast<NonTerminalPTNode*>(returnStatement->children[1].get());
     EXPECT_EQ(additiveExpr->children[0]->getType(), PTNode::Type::MultiplicativeExpr);
-    auto* multiplicativeExpr = static_cast<NonTerminalPTNode*>(additiveExpr->children[0].release());
+    auto* multiplicativeExpr = static_cast<NonTerminalPTNode*>(additiveExpr->children[0].get());
     EXPECT_EQ(multiplicativeExpr->children[0]->getType(), PTNode::Type::UnaryExpr);
-    auto* unaryExpr = static_cast<NonTerminalPTNode*>(multiplicativeExpr->children[0].release());
+    auto* unaryExpr = static_cast<NonTerminalPTNode*>(multiplicativeExpr->children[0].get());
     EXPECT_EQ(unaryExpr->children[0]->getType(), PTNode::Type::PrimaryExpr);
-    auto* primaryExpr = static_cast<NonTerminalPTNode*>(unaryExpr->children[0].release());
+    auto* primaryExpr = static_cast<NonTerminalPTNode*>(unaryExpr->children[0].get());
     EXPECT_EQ(primaryExpr->children[0]->getType(), PTNode::Type::Literal);
 }
 //---------------------------------------------------------------------------

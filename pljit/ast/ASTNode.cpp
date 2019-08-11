@@ -76,6 +76,7 @@ int64_t BinaryOperationAST::execute(pljit_ir::EvalContext& evaluate)
             }
             return left->execute(evaluate) / temp;
     }
+    return 0;
 }
 //---------------------------------------------------------------------------
 void FunctionAST::accept(ASTVisitor& v) {
